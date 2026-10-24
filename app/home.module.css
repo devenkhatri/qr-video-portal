@@ -1,0 +1,110 @@
+/* home.module.css */
+
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--gradient-hero);
+  text-align: center;
+}
+
+.hero {
+  max-width: 520px;
+  width: 100%;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 14px;
+  background: rgba(79, 156, 249, 0.12);
+  border: 1px solid rgba(79, 156, 249, 0.25);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-primary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-6);
+}
+
+.qrIcon {
+  color: var(--color-primary);
+  margin-bottom: var(--space-6);
+  opacity: 0.8;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: var(--space-10);
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 10px var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.stepNum {
+  width: 22px;
+  height: 22px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.stepArrow {
+  color: var(--color-text-dim);
+  font-size: var(--font-size-lg);
+}
+
+@media (max-width: 480px) {
+  .stepArrow { display: none; }
+  .steps { gap: var(--space-2); }
+}
+
+.adminLink {
+  margin-top: var(--space-12);
+}
+
+.adminAnchor {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  text-decoration: none;
+}
+
+.adminAnchor:hover {
+  color: var(--color-primary);
+}

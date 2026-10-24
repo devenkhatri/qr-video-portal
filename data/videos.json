@@ -1,0 +1,26 @@
+{
+  "intro-cardiac": {
+    "youtubeId": "dQw4w9WgXcQ",
+    "title": "Introduction to Cardiac Health",
+    "language": "en",
+    "description": "An overview of cardiac health essentials, prevention guidelines, and diagnostic indicators.",
+    "category": "Cardiology",
+    "tags": ["Heart Health", "Cardiology", "Prevention", "ECG Basics"]
+  },
+  "diabetes-basics": {
+    "youtubeId": "dQw4w9WgXcQ",
+    "title": "Diabetes Basics & Management",
+    "language": "en",
+    "description": "Understanding diabetes types, blood sugar tracking, lifestyle interventions, and pharmacological management.",
+    "category": "Endocrinology",
+    "tags": ["Diabetes", "Endocrinology", "Insulin", "Blood Sugar", "Nutrition"]
+  },
+  "hypertension-101": {
+    "youtubeId": "dQw4w9WgXcQ",
+    "title": "Hypertension 101",
+    "language": "en",
+    "description": "Everything healthcare practitioners and patients need to know about managing high blood pressure and risk factors.",
+    "category": "Cardiology",
+    "tags": ["Blood Pressure", "Hypertension", "Cardiovascular", "Lifestyle"]
+  }
+}
