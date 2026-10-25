@@ -45,6 +45,7 @@ export default function AdminCharts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
+  const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
 
   useEffect(() => {
     setBaseUrl(window.location.origin);
@@ -154,100 +155,124 @@ export default function AdminCharts() {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className={styles.kpiGrid}>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIcon}>👥</div>
-          <div className={styles.kpiValue}>{stats.totalRegistrations.toLocaleString()}</div>
-          <div className={styles.kpiLabel}>Total Registrations</div>
-        </div>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIcon}>▶️</div>
-          <div className={styles.kpiValue}>{stats.totalViews.toLocaleString()}</div>
-          <div className={styles.kpiLabel}>Total Video Views</div>
-        </div>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIcon}>📹</div>
-          <div className={styles.kpiValue}>{Object.keys(stats.viewsPerVideo).length}</div>
-          <div className={styles.kpiLabel}>Videos Watched</div>
-        </div>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIcon}>🌍</div>
-          <div className={styles.kpiValue}>{Object.keys(stats.regionBreakdown).length}</div>
-          <div className={styles.kpiLabel}>Regions Reached</div>
-        </div>
+      {/* Tab Navigation */}
+      <div className={styles.tabNav}>
+        <button
+          id="tab-btn-charts"
+          className={`${styles.tabBtn} ${activeTab === 'charts' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('charts')}
+        >
+          <span>📊</span>
+          <span>Analytics & Charts</span>
+        </button>
+        <button
+          id="tab-btn-videos"
+          className={`${styles.tabBtn} ${activeTab === 'videos' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('videos')}
+        >
+          <span>🎥</span>
+          <span>Video List & QR Codes</span>
+        </button>
       </div>
 
-      {/* Charts Row 1 */}
-      <div className={styles.chartsRow}>
-        <div className={styles.chartCard}>
-          <h3 className={styles.chartTitle}>Views per Video</h3>
-          <div className={styles.chartWrap}>
-            {Object.keys(stats.viewsPerVideo).length > 0
-              ? <Bar data={viewsChartData} options={barOptions} />
-              : <p className={styles.emptyChart}>No view data yet</p>
-            }
+      {activeTab === 'charts' ? (
+        <>
+          {/* KPI Cards */}
+          <div className={styles.kpiGrid}>
+            <div className={styles.kpiCard}>
+              <div className={styles.kpiIcon}>👥</div>
+              <div className={styles.kpiValue}>{stats.totalRegistrations.toLocaleString()}</div>
+              <div className={styles.kpiLabel}>Total Registrations</div>
+            </div>
+            <div className={styles.kpiCard}>
+              <div className={styles.kpiIcon}>▶️</div>
+              <div className={styles.kpiValue}>{stats.totalViews.toLocaleString()}</div>
+              <div className={styles.kpiLabel}>Total Video Views</div>
+            </div>
+            <div className={styles.kpiCard}>
+              <div className={styles.kpiIcon}>📹</div>
+              <div className={styles.kpiValue}>{Object.keys(stats.viewsPerVideo).length}</div>
+              <div className={styles.kpiLabel}>Videos Watched</div>
+            </div>
+            <div className={styles.kpiCard}>
+              <div className={styles.kpiIcon}>🌍</div>
+              <div className={styles.kpiValue}>{Object.keys(stats.regionBreakdown).length}</div>
+              <div className={styles.kpiLabel}>Regions Reached</div>
+            </div>
           </div>
-        </div>
-        <div className={styles.chartCard}>
-          <h3 className={styles.chartTitle}>Gender Breakdown</h3>
-          <div className={styles.chartWrap}>
-            {Object.keys(stats.genderBreakdown).length > 0
-              ? <Pie data={genderChartData} options={pieOptions} />
-              : <p className={styles.emptyChart}>No registration data yet</p>
-            }
-          </div>
-        </div>
-      </div>
 
-      {/* Charts Row 2 */}
-      <div className={styles.chartsRowWide}>
-        <div className={styles.chartCard}>
-          <h3 className={styles.chartTitle}>Top Regions (up to 10)</h3>
-          <div className={styles.chartWrap}>
-            {Object.keys(stats.regionBreakdown).length > 0
-              ? <Bar data={regionChartData} options={barOptions} />
-              : <p className={styles.emptyChart}>No region data yet</p>
-            }
+          {/* Charts Row 1 */}
+          <div className={styles.chartsRow}>
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>Views per Video</h3>
+              <div className={styles.chartWrap}>
+                {Object.keys(stats.viewsPerVideo).length > 0
+                  ? <Bar data={viewsChartData} options={barOptions} />
+                  : <p className={styles.emptyChart}>No view data yet</p>
+                }
+              </div>
+            </div>
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>Gender Breakdown</h3>
+              <div className={styles.chartWrap}>
+                {Object.keys(stats.genderBreakdown).length > 0
+                  ? <Pie data={genderChartData} options={pieOptions} />
+                  : <p className={styles.emptyChart}>No registration data yet</p>
+                }
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Recent Registrations Table */}
-      <div className={styles.tableCard}>
-        <h3 className={styles.chartTitle}>Recent Registrations (Last 10)</h3>
-        {stats.recentRegistrations.length === 0 ? (
-          <p className={styles.emptyChart}>No registrations yet</p>
-        ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Gender</th>
-                  <th>Region</th>
-                  <th>Profession</th>
-                  <th>Registered At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recentRegistrations.map((reg, idx) => (
-                  <tr key={idx}>
-                    <td>{reg.name}</td>
-                    <td>{reg.gender || '—'}</td>
-                    <td>{reg.region || '—'}</td>
-                    <td>{reg.profession || '—'}</td>
-                    <td>{reg.registeredAt ? new Date(reg.registeredAt).toLocaleString() : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Charts Row 2 */}
+          <div className={styles.chartsRowWide}>
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>Top Regions (up to 10)</h3>
+              <div className={styles.chartWrap}>
+                {Object.keys(stats.regionBreakdown).length > 0
+                  ? <Bar data={regionChartData} options={barOptions} />
+                  : <p className={styles.emptyChart}>No region data yet</p>
+                }
+              </div>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Per-video analytics table with QR codes */}
-      {baseUrl && <AdminVideoTable baseUrl={baseUrl} />}
+          {/* Recent Registrations Table */}
+          <div className={styles.tableCard}>
+            <h3 className={styles.chartTitle}>Recent Registrations (Last 10)</h3>
+            {stats.recentRegistrations.length === 0 ? (
+              <p className={styles.emptyChart}>No registrations yet</p>
+            ) : (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Gender</th>
+                      <th>Region</th>
+                      <th>Profession</th>
+                      <th>Registered At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.recentRegistrations.map((reg, idx) => (
+                      <tr key={idx}>
+                        <td>{reg.name}</td>
+                        <td>{reg.gender || '—'}</td>
+                        <td>{reg.region || '—'}</td>
+                        <td>{reg.profession || '—'}</td>
+                        <td>{reg.registeredAt ? new Date(reg.registeredAt).toLocaleString() : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Video List & QR Codes Tab */
+        baseUrl && <AdminVideoTable baseUrl={baseUrl} />
+      )}
     </div>
   );
 }
