@@ -3,12 +3,9 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
-import videos from '@/data/videos.json';
-import { VideoConfig } from '@/types/video';
+import { getAllVideos } from '@/lib/videos';
 
 export const dynamic = 'force-dynamic';
-
-const allVideos = videos as Record<string, VideoConfig>;
 
 export async function GET() {
   try {
@@ -18,6 +15,8 @@ export async function GET() {
     if (!session.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allVideos = await getAllVideos();
 
     // Build reverse map to look up video title from youtubeId or slug
     const idToTitle: Record<string, string> = {};

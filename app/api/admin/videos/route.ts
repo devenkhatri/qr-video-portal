@@ -3,8 +3,7 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
-import videos from '@/data/videos.json';
-import { VideoConfig } from '@/types/video';
+import { getAllVideos } from '@/lib/videos';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,8 +20,6 @@ export interface VideoRow {
   lastViewed: string | null;
 }
 
-const allVideos = videos as Record<string, VideoConfig>;
-
 export async function GET() {
   try {
     // Auth check
@@ -32,10 +29,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Load videos from Google Sheets (or fallback to videos.json)
+    const allVideos = await getAllVideos();
+
     // Map both JSON keys and youtubeIds to the canonical videoRow key
     const idToKey: Record<string, string> = {};
 
-    // Build base rows from videos.json config
+    // Build base rows
     const videoRows: Record<string, VideoRow> = {};
     for (const [videoId, v] of Object.entries(allVideos)) {
       idToKey[videoId] = videoId;
