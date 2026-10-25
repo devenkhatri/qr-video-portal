@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
-import { getAllVideos } from '@/lib/videos';
+import { getAllVideos, addVideo } from '@/lib/videos';
+import { extractYouTubeId } from '@/lib/youtube';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,3 +122,79 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch video stats' }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    // Auth check
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    if (!session.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { urlOrId, title, videoId, language, category, tags, description } = body;
+
+    // Validate YouTube URL or ID
+    if (!urlOrId || typeof urlOrId !== 'string' || !urlOrId.trim()) {
+      return NextResponse.json(
+        { error: 'YouTube URL or Video ID is required.' },
+        { status: 400 }
+      );
+    }
+
+    // Extract YouTube ID from full URL (or clean up ID)
+    const youtubeId = extractYouTubeId(urlOrId);
+    if (!youtubeId) {
+      return NextResponse.json(
+        {
+          error:
+            'Invalid YouTube URL or ID. Please provide a full YouTube link (e.g., https://www.youtube.com/watch?v=... or https://youtu.be/...) or a valid 11-character video ID.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate Title
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return NextResponse.json({ error: 'Video title is required.' }, { status: 400 });
+    }
+
+    // Process tags
+    let tagsList: string[] = [];
+    if (Array.isArray(tags)) {
+      tagsList = tags.map(t => String(t).trim()).filter(Boolean);
+    } else if (typeof tags === 'string') {
+      tagsList = tags.split(',').map(t => t.trim()).filter(Boolean);
+    }
+
+    const result = await addVideo({
+      videoId: videoId?.trim(),
+      youtubeId,
+      title: title.trim(),
+      language: language?.trim() || 'en',
+      category: category?.trim() || 'Oncology',
+      tags: tagsList,
+      description: description?.trim() || '',
+    });
+
+
+    return NextResponse.json({
+      success: true,
+      video: result.video,
+      sheetAppended: result.sheetAppended,
+      message: result.sheetAppended
+        ? 'Video added and saved to Google Sheet successfully!'
+        : 'Video added (Demo mode: Google Sheet credentials not set, saved to memory)',
+    });
+  } catch (error: unknown) {
+    console.error('[admin/videos] POST Error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to add video';
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
+  }
+}
+
+

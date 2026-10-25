@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import QRCode from 'qrcode';
+import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/youtube';
 import styles from './AdminVideoTable.module.css';
 
 interface VideoRow {
@@ -26,6 +27,12 @@ interface Props {
   refreshTrigger?: number;
   onRefreshed?: (date: Date) => void;
 }
+
+const COMMON_LANGUAGES = [
+  { code: 'en', label: 'English (EN)' },
+  { code: 'hi', label: 'Hindi (HI)' },
+  { code: 'gu', label: 'Gujarati (GU)' },
+];
 
 function buildWatchUrl(baseUrl: string, youtubeId: string, language: string): string {
   return `${baseUrl}/watch?video=${encodeURIComponent(youtubeId)}&lang=${encodeURIComponent(language)}`;
@@ -53,6 +60,25 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
 
   // Copy feedback — tracks which video ID (or 'modal') was just copied
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Add Video modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUrlOrId, setNewUrlOrId] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newVideoId, setNewVideoId] = useState('');
+  const [newCategory, setNewCategory] = useState('Oncology');
+  const [newLanguage, setNewLanguage] = useState('en');
+  const [newCustomLanguage, setNewCustomLanguage] = useState('');
+  const [newTags, setNewTags] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
+  const [lastAddedVideo, setLastAddedVideo] = useState<VideoRow | null>(null);
+
+
+  // Live extracted YouTube ID
+  const liveYouTubeId = extractYouTubeId(newUrlOrId);
 
   const onRefreshedRef = useRef(onRefreshed);
   useEffect(() => {
@@ -104,6 +130,88 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
 
   const closeQr = () => setQrModal(null);
 
+  const resetAddForm = () => {
+    setNewUrlOrId('');
+    setNewTitle('');
+    setNewVideoId('');
+    setNewCategory('Oncology');
+    setNewLanguage('en');
+    setNewCustomLanguage('');
+    setNewTags('');
+    setNewDescription('');
+    setSubmitError('');
+    setSubmitSuccess('');
+    setLastAddedVideo(null);
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    resetAddForm();
+  };
+
+  const handleAddVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!liveYouTubeId) {
+      setSubmitError('Please enter a valid YouTube URL or 11-character video ID.');
+      return;
+    }
+    if (!newTitle.trim()) {
+      setSubmitError('Please enter a video title.');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    const resolvedCategory = newCategory.trim() || 'Oncology';
+    const resolvedLanguage = newLanguage === '__custom__' ? newCustomLanguage.trim() : newLanguage;
+
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          urlOrId: newUrlOrId.trim(),
+          title: newTitle.trim(),
+          videoId: newVideoId.trim() || undefined,
+          category: resolvedCategory,
+          language: resolvedLanguage || 'en',
+          tags: newTags.trim(),
+          description: newDescription.trim(),
+        }),
+      });
+
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to add video');
+      }
+
+      setSubmitSuccess(data.message || 'Video added successfully!');
+      loadVideos();
+      if (data.video) {
+        setLastAddedVideo({
+          videoId: data.video.videoId,
+          youtubeId: data.video.youtubeId,
+          title: data.video.title,
+          language: data.video.language,
+          category: data.video.category,
+          tags: data.video.tags || [],
+          description: data.video.description || '',
+          views: 0,
+          uniqueViewers: 0,
+          lastViewed: null,
+        });
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred while saving the video.';
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+
   const downloadQr = () => {
     if (!qrDataUrl || !qrModal) return;
     const a = document.createElement('a');
@@ -131,6 +239,7 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
   // Derived data
   const categories = Array.from(new Set(videos.map(v => v.category))).sort();
   const languages = Array.from(new Set(videos.map(v => v.language))).sort();
+
 
   const filtered = videos
     .filter(v => {
@@ -166,7 +275,16 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
           <h2 className={styles.sectionTitle}>📹 All Videos</h2>
           <p className={styles.sectionSub}>Per-video analytics · sortable &amp; filterable · QR code generator</p>
         </div>
-        {isDemoData && <span className={styles.demoBadge}>Demo Data</span>}
+        <div className={styles.headerRight}>
+          {isDemoData && <span className={styles.demoBadge}>Demo Data</span>}
+          <button
+            id="btn-open-add-video"
+            className={styles.btnAddVideo}
+            onClick={() => setShowAddModal(true)}
+          >
+            <span>➕</span> Add New Video
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -323,6 +441,257 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
           </div>
         </div>
       )}
+
+      {/* Add Video Modal */}
+      {showAddModal && (
+        <div className={styles.modalOverlay} onClick={closeAddModal}>
+          <div className={styles.addModal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div>
+                <h3 className={styles.modalTitle}>➕ Add New Video</h3>
+                <p className={styles.modalSub}>Extracts YouTube ID and saves to Google Sheet</p>
+              </div>
+              <button className={styles.closeBtn} onClick={closeAddModal} id="add-video-modal-close">✕</button>
+            </div>
+
+            {submitSuccess && lastAddedVideo ? (
+              <div className={styles.addSuccessCard}>
+                <div className={styles.successIcon}>🎉</div>
+                <h4 className={styles.successTitle}>Video Added Successfully!</h4>
+                <p className={styles.successMsg}>{submitSuccess}</p>
+                <div className={styles.successActions}>
+                  <button
+                    id="btn-success-view-qr"
+                    className={styles.btnSuccessQr}
+                    onClick={() => {
+                      const added = lastAddedVideo;
+                      closeAddModal();
+                      openQr(added);
+                    }}
+                  >
+                    📱 View &amp; Download QR Code
+                  </button>
+                  <button
+                    id="btn-success-add-another"
+                    className={styles.btnSuccessAddAnother}
+                    onClick={resetAddForm}
+                  >
+                    ➕ Add Another Video
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleAddVideo} className={styles.modalForm}>
+                <div className={styles.modalBody}>
+                  {submitError && (
+                    <div className={styles.submitError}>
+                      <span>⚠️</span>
+                      <span>{submitError}</span>
+                    </div>
+                  )}
+
+                  {/* YouTube URL or ID */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="video-url-input" className={styles.formLabel}>
+                      <span>YouTube URL or ID <span className={styles.formRequired}>*</span></span>
+                    </label>
+                    <input
+                      id="video-url-input"
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="Paste full URL (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...) or ID"
+                      value={newUrlOrId}
+                      onChange={e => setNewUrlOrId(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                    <span className={styles.formHelper}>
+                      Supports standard youtube.com links, youtu.be short links, shorts, embeds, and raw 11-char IDs.
+                    </span>
+
+                    {/* Live Extraction Preview */}
+                    {newUrlOrId.trim() && (
+                      liveYouTubeId ? (
+                        <div className={styles.extractedBox}>
+                          <div className={styles.extractedBadge}>
+                            <span>✅</span>
+                            <span>Extracted YouTube ID: <strong>{liveYouTubeId}</strong></span>
+                          </div>
+                          <div className={styles.thumbPreview}>
+                            <Image
+                              src={getYouTubeThumbnail(liveYouTubeId)}
+                              alt="Video Thumbnail Preview"
+                              className={styles.thumbImg}
+                              width={110}
+                              height={62}
+                              unoptimized
+                            />
+                            <div className={styles.thumbMeta}>
+                              <span className={styles.thumbLabel}>Ready to save &amp; embed</span>
+                              <a
+                                href={`https://www.youtube.com/watch?v=${liveYouTubeId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.thumbLink}
+                              >
+                                Test on YouTube ↗
+                              </a>
+                            </div>
+                          </div>
+
+                        </div>
+                      ) : (
+                        <div className={styles.extractedError}>
+                          ⚠️ Could not recognize a valid YouTube ID from this URL. Please check the URL format.
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="video-title-input" className={styles.formLabel}>
+                      <span>Title <span className={styles.formRequired}>*</span></span>
+                    </label>
+                    <input
+                      id="video-title-input"
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="e.g. Cardiology: Heart Attack Symptoms & First Aid"
+                      value={newTitle}
+                      onChange={e => setNewTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Slug / Video ID (Optional) */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="video-slug-input" className={styles.formLabel}>
+                      <span>Custom Video Slug / ID <span className={styles.formHelper}>(Optional)</span></span>
+                    </label>
+                    <input
+                      id="video-slug-input"
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="e.g. cardiac-first-aid (auto-generated from title if blank)"
+                      value={newVideoId}
+                      onChange={e => setNewVideoId(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Category & Language grid */}
+                  <div className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="video-category-input" className={styles.formLabel}>
+                        <span>Category <span className={styles.formRequired}>*</span></span>
+                      </label>
+                      <input
+                        id="video-category-input"
+                        type="text"
+                        className={styles.formInput}
+                        placeholder="e.g. Oncology"
+                        value={newCategory}
+                        onChange={e => setNewCategory(e.target.value)}
+                        required
+                      />
+                    </div>
+
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="video-language-select" className={styles.formLabel}>
+                        <span>Language <span className={styles.formRequired}>*</span></span>
+                      </label>
+                      <select
+                        id="video-language-select"
+                        className={styles.formSelect}
+                        value={newLanguage}
+                        onChange={e => setNewLanguage(e.target.value)}
+                      >
+                        {COMMON_LANGUAGES.map(l => (
+                          <option key={l.code} value={l.code}>{l.label}</option>
+                        ))}
+                        <option value="__custom__">+ Other Language Code</option>
+                      </select>
+                      {newLanguage === '__custom__' && (
+                        <input
+                          id="video-custom-language-input"
+                          type="text"
+                          className={styles.formInput}
+                          placeholder="e.g. fr, de, ml…"
+                          value={newCustomLanguage}
+                          onChange={e => setNewCustomLanguage(e.target.value)}
+                          style={{ marginTop: '0.4rem' }}
+                          required
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="video-tags-input" className={styles.formLabel}>
+                      <span>Tags <span className={styles.formHelper}>(Comma-separated)</span></span>
+                    </label>
+                    <input
+                      id="video-tags-input"
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="e.g. Heart Health, First Aid, Emergency, ECG"
+                      value={newTags}
+                      onChange={e => setNewTags(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="video-description-input" className={styles.formLabel}>
+                      <span>Description</span>
+                    </label>
+                    <textarea
+                      id="video-description-input"
+                      className={styles.formTextarea}
+                      rows={3}
+                      placeholder="Brief overview of clinical topics and guidelines covered in this video…"
+                      value={newDescription}
+                      onChange={e => setNewDescription(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.modalFooter}>
+                  <button
+                    type="button"
+                    className={styles.btnCancel}
+                    onClick={closeAddModal}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    id="btn-submit-add-video"
+                    type="submit"
+                    className={styles.btnSubmit}
+                    disabled={submitting || !liveYouTubeId || !newTitle.trim()}
+                  >
+                    {submitting ? (
+                      <>
+                        <span className={styles.spinner} style={{ width: 14, height: 14, borderWidth: 2 }} />
+                        <span>Saving to Sheet…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>💾</span>
+                        <span>Save to Google Sheet</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
