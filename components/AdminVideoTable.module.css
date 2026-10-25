@@ -57,26 +57,32 @@
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 0.45rem 0.75rem;
+  padding: 0.55rem 0.85rem;
   color: var(--color-text);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.searchInput:focus { border-color: var(--color-primary); }
+.searchInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
 
 .select {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 0.45rem 0.75rem;
+  padding: 0.55rem 0.85rem;
   color: var(--color-text);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.select:focus { border-color: var(--color-primary); }
+.select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
 
 .resultCount {
   font-size: 0.78rem;

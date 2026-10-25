@@ -14,6 +14,8 @@
   --color-primary: #4F9CF9;
   --color-primary-dark: #2B7EE8;
   --color-primary-glow: rgba(79, 156, 249, 0.25);
+  --color-primary-subtle: rgba(79, 156, 249, 0.1);
+  --color-success-subtle: rgba(46, 204, 113, 0.1);
   --color-accent: #9B59B6;
 
   /* Text */

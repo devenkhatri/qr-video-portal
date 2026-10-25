@@ -127,6 +127,12 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
 
         <form onSubmit={handleSubmit} className={styles.form}>
 
+          {/* Section 1: Personal Details */}
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionBadge}>1</span>
+            <span className={styles.sectionTitle}>Personal Details</span>
+          </div>
+
           {/* Name */}
           <div className={styles.field}>
             <label htmlFor="name" className={styles.label}>
@@ -184,6 +190,12 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
             </div>
           </div>
 
+          {/* Section 2: Contact Details */}
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionBadge}>2</span>
+            <span className={styles.sectionTitle}>Contact Details</span>
+          </div>
+
           {/* Mobile */}
           <div className={styles.field}>
             <label htmlFor="mobile" className={styles.label}>
@@ -217,6 +229,12 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
               className={styles.input}
               autoComplete="email"
             />
+          </div>
+
+          {/* Section 3: Location */}
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionBadge}>3</span>
+            <span className={styles.sectionTitle}>Location</span>
           </div>
 
           {/* Country & State row */}
@@ -269,6 +287,12 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
               className={styles.input}
               required
             />
+          </div>
+
+          {/* Section 4: Role / Category */}
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionBadge}>4</span>
+            <span className={styles.sectionTitle}>Your Role</span>
           </div>
 
           {/* User Category / Role */}
