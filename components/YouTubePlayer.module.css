@@ -21,7 +21,13 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: #000;
-  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 50px rgba(79, 156, 249, 0.12);
+  transition: box-shadow 0.3s ease;
+}
+
+.playerWrap:hover {
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.7), 0 0 60px rgba(79, 156, 249, 0.18);
 }
 
 .iframe {
@@ -58,8 +64,9 @@
 }
 
 .videoTitle {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-text);
   line-height: 1.3;
 }
