@@ -4,7 +4,7 @@ import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { videoId, userId } = body;
+    const { videoId, userId, language } = body;
 
     if (!videoId) {
       return NextResponse.json({ error: 'Missing videoId' }, { status: 400 });
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
           videoId,
           userId || 'anonymous',
           new Date().toISOString(),
+          language || '',
         ]],
       },
     });

@@ -10,11 +10,12 @@ import styles from './WatchClient.module.css';
 interface WatchClientProps {
   videoId: string;
   video: VideoConfig;
+  language: string;
 }
 
 type ViewState = 'loading' | 'form' | 'player';
 
-export default function WatchClient({ videoId, video }: WatchClientProps) {
+export default function WatchClient({ videoId, video, language }: WatchClientProps) {
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [userId, setUserId] = useState<string>('');
 
@@ -45,11 +46,11 @@ export default function WatchClient({ videoId, video }: WatchClientProps) {
     fetch('/api/track-view', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ videoId, userId: uid }),
+      body: JSON.stringify({ videoId, userId: uid, language }),
     }).catch(() => {
       // Silent fail — tracking should never block the video
     });
-  }, [videoId, userId]);
+  }, [videoId, userId, language]);
 
   if (viewState === 'loading') {
     return (
@@ -79,6 +80,9 @@ export default function WatchClient({ videoId, video }: WatchClientProps) {
           </svg>
           Medical Video Portal
         </div>
+        {language && (
+          <span className={styles.langBadge}>🌐 {language.toUpperCase()}</span>
+        )}
       </div>
       <YouTubePlayer
         youtubeId={video.youtubeId}

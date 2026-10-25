@@ -5,7 +5,7 @@ import WatchClient from './WatchClient';
 import styles from './watch.module.css';
 
 interface WatchPageProps {
-  searchParams: Promise<{ video?: string }>;
+  searchParams: Promise<{ video?: string; lang?: string }>;
 }
 
 const allVideos = videos as Record<string, VideoConfig>;
@@ -22,7 +22,7 @@ export async function generateMetadata({ searchParams }: WatchPageProps): Promis
 }
 
 export default async function WatchPage({ searchParams }: WatchPageProps) {
-  const { video: videoId } = await searchParams;
+  const { video: videoId, lang } = await searchParams;
 
   if (!videoId || !allVideos[videoId]) {
     return (
@@ -39,10 +39,12 @@ export default async function WatchPage({ searchParams }: WatchPageProps) {
   }
 
   const video = allVideos[videoId];
+  // Use URL lang param, fallback to the video's configured language
+  const language = lang || video.language;
 
   return (
     <main className={styles.main}>
-      <WatchClient videoId={videoId} video={video} />
+      <WatchClient videoId={videoId} video={video} language={language} />
     </main>
   );
 }

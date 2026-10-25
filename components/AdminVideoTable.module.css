@@ -1,0 +1,385 @@
+/* AdminVideoTable.module.css */
+
+.section {
+  margin-top: 2.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 2px;
+}
+
+.sectionSub {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.demoBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(251, 191, 36, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.75rem;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 180px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  color: var(--color-text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.searchInput:focus { border-color: var(--color-primary); }
+
+.select {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  color: var(--color-text);
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.select:focus { border-color: var(--color-primary); }
+
+.resultCount {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* Table */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table thead tr {
+  background: rgba(255,255,255,0.03);
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+.thSortable:hover { color: var(--color-text); }
+
+.thNum { text-align: right; }
+.thDate { text-align: center; }
+.thActions { text-align: center; }
+
+.sortNeutral { opacity: 0.35; margin-left: 4px; }
+.sortActive  { color: var(--color-primary); margin-left: 4px; }
+
+.row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.1s;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: rgba(255,255,255,0.025); }
+
+.table td {
+  padding: 0.85rem 1rem;
+  vertical-align: top;
+  color: var(--color-text);
+}
+
+.tdTitle { max-width: 280px; }
+.titleMain { font-weight: 600; color: var(--color-text); line-height: 1.3; }
+.titleSub  { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 2px; font-family: monospace; }
+
+.tagList { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag {
+  font-size: 0.68rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(79, 156, 249, 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(79, 156, 249, 0.2);
+}
+
+.categoryBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(155, 89, 182, 0.12);
+  color: #b07fd4;
+  white-space: nowrap;
+}
+
+.langBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.tdNum { text-align: right; }
+.numBig  { font-size: 1.1rem; font-weight: 700; color: var(--color-text); }
+.numMuted { font-size: 0.9rem; font-weight: 500; color: var(--color-text-muted); }
+
+.tdDate { text-align: center; font-size: 0.78rem; color: var(--color-text-muted); }
+.never  { color: var(--color-border); }
+
+.tdActions { text-align: center; white-space: nowrap; }
+
+.btnQr, .btnCopy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin: 2px;
+}
+
+.btnQr {
+  background: rgba(79, 156, 249, 0.1);
+  border-color: rgba(79, 156, 249, 0.3);
+  color: var(--color-primary);
+}
+.btnQr:hover { background: rgba(79, 156, 249, 0.2); }
+
+.btnCopy {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+.btnCopy:hover { background: rgba(255,255,255,0.08); color: var(--color-text); }
+
+.emptyRow {
+  text-align: center;
+  padding: 3rem 1rem !important;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* States */
+.loadState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.errorState {
+  padding: 2rem;
+  text-align: center;
+  color: #ef4444;
+  font-size: 0.9rem;
+}
+
+/* QR Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 0;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modalTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 2px;
+}
+
+.modalSub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+.closeBtn:hover { background: var(--color-border); color: var(--color-text); }
+
+.qrWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: #fff;
+}
+
+.qrImage {
+  width: 240px;
+  height: 240px;
+  border-radius: 8px;
+}
+
+.qrLoading {
+  width: 240px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.urlBox {
+  margin: 0 1.25rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+}
+
+.urlText {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: var(--color-primary);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.btnDownload, .btnCopyUrl {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btnDownload {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.btnDownload:hover { opacity: 0.85; }
+.btnDownload:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btnCopyUrl {
+  background: rgba(255,255,255,0.05);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btnCopyUrl:hover { background: rgba(255,255,255,0.1); }

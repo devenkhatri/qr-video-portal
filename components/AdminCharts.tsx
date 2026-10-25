@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
+import AdminVideoTable from './AdminVideoTable';
 import styles from './AdminCharts.module.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
@@ -43,6 +44,11 @@ export default function AdminCharts() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
 
   useEffect(() => {
     fetch('/api/admin/stats')
@@ -239,6 +245,9 @@ export default function AdminCharts() {
           </div>
         )}
       </div>
+
+      {/* Per-video analytics table with QR codes */}
+      {baseUrl && <AdminVideoTable baseUrl={baseUrl} />}
     </div>
   );
 }
