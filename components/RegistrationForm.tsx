@@ -3,12 +3,29 @@
 import { useState } from 'react';
 import styles from './RegistrationForm.module.css';
 
+const USER_TYPES = [
+  'Cancer Patient',
+  'Relative of Patient',
+  'Normal Person',
+  'ASHA',
+  'Nurse - Coordinator',
+  'CHO',
+  'Non-cancer Doctor',
+  'Oncologist',
+  'Other',
+];
+
 interface FormData {
   name: string;
+  age: string;
   gender: string;
-  phone: string;
-  region: string;
-  profession: string;
+  mobile: string;
+  email: string;
+  country: string;
+  state: string;
+  district: string;
+  userType: string;
+  userTypeOther: string;
 }
 
 interface RegistrationFormProps {
@@ -19,15 +36,20 @@ interface RegistrationFormProps {
 export default function RegistrationForm({ onSuccess, userId }: RegistrationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
+    age: '',
     gender: '',
-    phone: '',
-    region: '',
-    profession: '',
+    mobile: '',
+    email: '',
+    country: 'India',
+    state: 'Gujarat',
+    district: '',
+    userType: '',
+    userTypeOther: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -38,6 +60,30 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
 
     if (!formData.name.trim()) {
       setError('Please enter your name.');
+      return;
+    }
+    if (!formData.age || isNaN(Number(formData.age)) || Number(formData.age) < 1 || Number(formData.age) > 120) {
+      setError('Please enter a valid age.');
+      return;
+    }
+    if (!formData.gender) {
+      setError('Please select your gender.');
+      return;
+    }
+    if (!formData.mobile.trim()) {
+      setError('Please enter your mobile number.');
+      return;
+    }
+    if (!formData.district.trim()) {
+      setError('Please enter your district.');
+      return;
+    }
+    if (!formData.userType) {
+      setError('Please select who you are.');
+      return;
+    }
+    if (formData.userType === 'Other' && !formData.userTypeOther.trim()) {
+      setError('Please specify your role.');
       return;
     }
 
@@ -53,7 +99,6 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
         throw new Error('Registration failed');
       }
 
-      // Set localStorage token
       localStorage.setItem('user_registered', 'true');
       localStorage.setItem('user_id', userId);
       onSuccess();
@@ -76,11 +121,13 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
           </div>
           <h1 className={styles.title}>Quick Registration</h1>
           <p className={styles.subtitle}>
-            Please fill in a few details to access the video. This only takes 30 seconds.
+            Please fill in a few details to access the video. This only takes a minute.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+
+          {/* Name */}
           <div className={styles.field}>
             <label htmlFor="name" className={styles.label}>
               Full Name <span className={styles.required}>*</span>
@@ -98,66 +145,170 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
             />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Gender</label>
-            <div className={styles.radioGroup}>
-              {['Male', 'Female', 'Other', 'Prefer not to say'].map(g => (
-                <label key={g} className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value={g}
-                    checked={formData.gender === g}
-                    onChange={handleChange}
-                    className={styles.radio}
-                  />
-                  <span>{g}</span>
-                </label>
-              ))}
+          {/* Age & Sex row */}
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label htmlFor="age" className={styles.label}>
+                Age <span className={styles.required}>*</span>
+              </label>
+              <input
+                id="age"
+                name="age"
+                type="number"
+                min="1"
+                max="120"
+                value={formData.age}
+                onChange={handleChange}
+                placeholder="e.g. 35"
+                className={styles.input}
+                required
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>
+                Gender <span className={styles.required}>*</span>
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className={styles.select}
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
           </div>
 
+          {/* Mobile */}
           <div className={styles.field}>
-            <label htmlFor="phone" className={styles.label}>Phone Number</label>
+            <label htmlFor="mobile" className={styles.label}>
+              Mobile Number <span className={styles.required}>*</span>
+            </label>
             <input
-              id="phone"
-              name="phone"
+              id="mobile"
+              name="mobile"
               type="tel"
-              value={formData.phone}
+              value={formData.mobile}
               onChange={handleChange}
               placeholder="+91 XXXXX XXXXX"
               className={styles.input}
               autoComplete="tel"
+              required
             />
           </div>
 
+          {/* Email (optional) */}
+          <div className={styles.field}>
+            <label htmlFor="email" className={styles.label}>
+              Email <span className={styles.optional}>(optional)</span>
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="your@email.com"
+              className={styles.input}
+              autoComplete="email"
+            />
+          </div>
+
+          {/* Country & State row */}
           <div className={styles.fieldRow}>
             <div className={styles.field}>
-              <label htmlFor="region" className={styles.label}>City / Region</label>
+              <label htmlFor="country" className={styles.label}>
+                Country <span className={styles.required}>*</span>
+              </label>
               <input
-                id="region"
-                name="region"
+                id="country"
+                name="country"
                 type="text"
-                value={formData.region}
+                value={formData.country}
                 onChange={handleChange}
-                placeholder="e.g. Mumbai"
+                placeholder="India"
                 className={styles.input}
+                required
               />
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="profession" className={styles.label}>Profession / Specialty</label>
+              <label htmlFor="state" className={styles.label}>
+                State <span className={styles.required}>*</span>
+              </label>
               <input
-                id="profession"
-                name="profession"
+                id="state"
+                name="state"
                 type="text"
-                value={formData.profession}
+                value={formData.state}
                 onChange={handleChange}
-                placeholder="e.g. Cardiologist"
+                placeholder="Gujarat"
                 className={styles.input}
+                required
               />
             </div>
           </div>
+
+          {/* District */}
+          <div className={styles.field}>
+            <label htmlFor="district" className={styles.label}>
+              District <span className={styles.required}>*</span>
+            </label>
+            <input
+              id="district"
+              name="district"
+              type="text"
+              value={formData.district}
+              onChange={handleChange}
+              placeholder="Enter your district"
+              className={styles.input}
+              required
+            />
+          </div>
+
+          {/* Who are you */}
+          <div className={styles.field}>
+            <label htmlFor="userType" className={styles.label}>
+              Who are you? <span className={styles.required}>*</span>
+            </label>
+            <select
+              id="userType"
+              name="userType"
+              value={formData.userType}
+              onChange={handleChange}
+              className={styles.select}
+              required
+            >
+              <option value="">Select your role</option>
+              {USER_TYPES.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Other specify */}
+          {formData.userType === 'Other' && (
+            <div className={styles.field}>
+              <label htmlFor="userTypeOther" className={styles.label}>
+                Please specify your role <span className={styles.required}>*</span>
+              </label>
+              <input
+                id="userTypeOther"
+                name="userTypeOther"
+                type="text"
+                value={formData.userTypeOther}
+                onChange={handleChange}
+                placeholder="Describe your role"
+                className={styles.input}
+                required
+              />
+            </div>
+          )}
 
           {error && <p className={styles.error}>{error}</p>}
 

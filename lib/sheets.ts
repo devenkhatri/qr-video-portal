@@ -18,7 +18,7 @@ export function getSheetsClient() {
 export const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 
 export const RANGES = {
-  registrations: 'registrations!A:H',
+  registrations: 'registrations!A:K',
   analytics: 'analytics!A:E',
   videos: 'videos!A:G',
 } as const;

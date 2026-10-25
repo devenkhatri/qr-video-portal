@@ -21,15 +21,22 @@ interface StatsData {
   totalRegistrations: number;
   totalViews: number;
   genderBreakdown: Record<string, number>;
-  regionBreakdown: Record<string, number>;
-  professionBreakdown: Record<string, number>;
+  countryBreakdown: Record<string, number>;
+  stateBreakdown: Record<string, number>;
+  districtBreakdown: Record<string, number>;
+  userTypeBreakdown: Record<string, number>;
   viewsPerVideo: Record<string, number>;
   recentRegistrations: Array<{
     userId: string;
     name: string;
-    gender: string;
-    region: string;
-    profession: string;
+    age?: string;
+    gender?: string;
+    mobile?: string;
+    email?: string;
+    country?: string;
+    state?: string;
+    district?: string;
+    userType?: string;
     registeredAt: string;
   }>;
   isDemoData?: boolean;
@@ -38,7 +45,14 @@ interface StatsData {
 const CHART_COLORS = [
   '#4F9CF9', '#9B59B6', '#2ECC71', '#E74C3C',
   '#F39C12', '#1ABC9C', '#3498DB', '#E67E22',
+  '#E91E63', '#00BCD4', '#8BC34A', '#FF5722',
 ];
+
+function sortedTop(data: Record<string, number>, n = 10) {
+  return Object.entries(data)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n);
+}
 
 export default function AdminCharts() {
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -81,10 +95,21 @@ export default function AdminCharts() {
 
   if (!stats) return null;
 
+  // --- Chart data builders ---
   const genderChartData = {
     labels: Object.keys(stats.genderBreakdown),
     datasets: [{
       data: Object.values(stats.genderBreakdown),
+      backgroundColor: CHART_COLORS,
+      borderWidth: 0,
+    }],
+  };
+
+  const userTypeEntries = sortedTop(stats.userTypeBreakdown, 12);
+  const userTypeChartData = {
+    labels: userTypeEntries.map(([k]) => k),
+    datasets: [{
+      data: userTypeEntries.map(([, v]) => v),
       backgroundColor: CHART_COLORS,
       borderWidth: 0,
     }],
@@ -101,12 +126,25 @@ export default function AdminCharts() {
     }],
   };
 
-  const regionChartData = {
-    labels: Object.keys(stats.regionBreakdown).slice(0, 10),
+  const stateEntries = sortedTop(stats.stateBreakdown, 10);
+  const stateChartData = {
+    labels: stateEntries.map(([k]) => k),
     datasets: [{
       label: 'Users',
-      data: Object.values(stats.regionBreakdown).slice(0, 10),
+      data: stateEntries.map(([, v]) => v),
       backgroundColor: '#9B59B6',
+      borderRadius: 6,
+      borderSkipped: false,
+    }],
+  };
+
+  const districtEntries = sortedTop(stats.districtBreakdown, 10);
+  const districtChartData = {
+    labels: districtEntries.map(([k]) => k),
+    datasets: [{
+      label: 'Users',
+      data: districtEntries.map(([, v]) => v),
+      backgroundColor: '#2ECC71',
       borderRadius: 6,
       borderSkipped: false,
     }],
@@ -117,7 +155,7 @@ export default function AdminCharts() {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } },
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF', maxRotation: 40 } },
       y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF', stepSize: 1 } },
     },
   };
@@ -128,7 +166,7 @@ export default function AdminCharts() {
     plugins: {
       legend: {
         position: 'right' as const,
-        labels: { color: '#9CA3AF', padding: 16, font: { size: 13 } },
+        labels: { color: '#9CA3AF', padding: 14, font: { size: 12 } },
       },
     },
   };
@@ -163,7 +201,7 @@ export default function AdminCharts() {
           onClick={() => setActiveTab('charts')}
         >
           <span>📊</span>
-          <span>Analytics & Charts</span>
+          <span>Analytics &amp; Charts</span>
         </button>
         <button
           id="tab-btn-videos"
@@ -171,7 +209,7 @@ export default function AdminCharts() {
           onClick={() => setActiveTab('videos')}
         >
           <span>🎥</span>
-          <span>Video List & QR Codes</span>
+          <span>Video List &amp; QR Codes</span>
         </button>
       </div>
 
@@ -190,18 +228,18 @@ export default function AdminCharts() {
               <div className={styles.kpiLabel}>Total Video Views</div>
             </div>
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIcon}>📹</div>
-              <div className={styles.kpiValue}>{Object.keys(stats.viewsPerVideo).length}</div>
-              <div className={styles.kpiLabel}>Videos Watched</div>
+              <div className={styles.kpiIcon}>🗺️</div>
+              <div className={styles.kpiValue}>{Object.keys(stats.stateBreakdown).length}</div>
+              <div className={styles.kpiLabel}>States Reached</div>
             </div>
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIcon}>🌍</div>
-              <div className={styles.kpiValue}>{Object.keys(stats.regionBreakdown).length}</div>
-              <div className={styles.kpiLabel}>Regions Reached</div>
+              <div className={styles.kpiIcon}>📍</div>
+              <div className={styles.kpiValue}>{Object.keys(stats.districtBreakdown).length}</div>
+              <div className={styles.kpiLabel}>Districts Reached</div>
             </div>
           </div>
 
-          {/* Charts Row 1 */}
+          {/* Row 1: Views per Video + Sex Breakdown */}
           <div className={styles.chartsRow}>
             <div className={styles.chartCard}>
               <h3 className={styles.chartTitle}>Views per Video</h3>
@@ -223,14 +261,36 @@ export default function AdminCharts() {
             </div>
           </div>
 
-          {/* Charts Row 2 */}
+          {/* Row 2: User Type — full-width pie */}
           <div className={styles.chartsRowWide}>
             <div className={styles.chartCard}>
-              <h3 className={styles.chartTitle}>Top Regions (up to 10)</h3>
+              <h3 className={styles.chartTitle}>User Type Breakdown</h3>
+              <div className={styles.chartWrapTall}>
+                {Object.keys(stats.userTypeBreakdown).length > 0
+                  ? <Pie data={userTypeChartData} options={pieOptions} />
+                  : <p className={styles.emptyChart}>No registration data yet</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Geography — State + District */}
+          <div className={styles.chartsRow}>
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>Top States (up to 10)</h3>
               <div className={styles.chartWrap}>
-                {Object.keys(stats.regionBreakdown).length > 0
-                  ? <Bar data={regionChartData} options={barOptions} />
-                  : <p className={styles.emptyChart}>No region data yet</p>
+                {stateEntries.length > 0
+                  ? <Bar data={stateChartData} options={barOptions} />
+                  : <p className={styles.emptyChart}>No state data yet</p>
+                }
+              </div>
+            </div>
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>Top Districts (up to 10)</h3>
+              <div className={styles.chartWrap}>
+                {districtEntries.length > 0
+                  ? <Bar data={districtChartData} options={barOptions} />
+                  : <p className={styles.emptyChart}>No district data yet</p>
                 }
               </div>
             </div>
@@ -247,9 +307,11 @@ export default function AdminCharts() {
                   <thead>
                     <tr>
                       <th>Name</th>
+                      <th>Age</th>
                       <th>Gender</th>
-                      <th>Region</th>
-                      <th>Profession</th>
+                      <th>State</th>
+                      <th>District</th>
+                      <th>Who</th>
                       <th>Registered At</th>
                     </tr>
                   </thead>
@@ -257,9 +319,11 @@ export default function AdminCharts() {
                     {stats.recentRegistrations.map((reg, idx) => (
                       <tr key={idx}>
                         <td>{reg.name}</td>
+                        <td>{reg.age || '—'}</td>
                         <td>{reg.gender || '—'}</td>
-                        <td>{reg.region || '—'}</td>
-                        <td>{reg.profession || '—'}</td>
+                        <td>{reg.state || '—'}</td>
+                        <td>{reg.district || '—'}</td>
+                        <td>{reg.userType || '—'}</td>
                         <td>{reg.registeredAt ? new Date(reg.registeredAt).toLocaleString() : '—'}</td>
                       </tr>
                     ))}

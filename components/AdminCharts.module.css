@@ -156,6 +156,11 @@
   position: relative;
 }
 
+.chartWrapTall {
+  height: 320px;
+  position: relative;
+}
+
 .emptyChart {
   display: flex;
   align-items: center;

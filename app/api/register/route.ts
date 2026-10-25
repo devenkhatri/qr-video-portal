@@ -4,11 +4,29 @@ import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, name, gender, phone, region, profession } = body;
+    const {
+      userId,
+      name,
+      age,
+      gender,
+      mobile,
+      email,
+      country,
+      state,
+      district,
+      userType,
+      userTypeOther,
+    } = body;
 
     if (!userId || !name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Resolve effective user type label (handle "Other" with specify text)
+    const effectiveUserType =
+      userType === 'Other' && userTypeOther?.trim()
+        ? `Other: ${userTypeOther.trim()}`
+        : userType || '';
 
     if (!SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
       console.warn('[register] Google Sheets credentials not configured; simulated success');
@@ -24,11 +42,15 @@ export async function POST(req: NextRequest) {
       requestBody: {
         values: [[
           userId,
-          name,
+          name || '',
+          age || '',
           gender || '',
-          phone || '',
-          region || '',
-          profession || '',
+          mobile || '',
+          email || '',
+          country || 'India',
+          state || 'Gujarat',
+          district || '',
+          effectiveUserType,
           new Date().toISOString(),
         ]],
       },
