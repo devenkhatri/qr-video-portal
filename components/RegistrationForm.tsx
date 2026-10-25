@@ -271,10 +271,10 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
             />
           </div>
 
-          {/* Who are you */}
+          {/* User Category / Role */}
           <div className={styles.field}>
             <label htmlFor="userType" className={styles.label}>
-              Who are you? <span className={styles.required}>*</span>
+              I am registering as <span className={styles.required}>*</span>
             </label>
             <select
               id="userType"
@@ -284,7 +284,7 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
               className={styles.select}
               required
             >
-              <option value="">Select your role</option>
+              <option value="">Select your category</option>
               {USER_TYPES.map(t => (
                 <option key={t} value={t}>{t}</option>
               ))}

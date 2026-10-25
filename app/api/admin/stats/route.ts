@@ -16,7 +16,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const allVideos = await getAllVideos();
+    const allVideos = await getAllVideos(true);
 
     // Build reverse map to look up video title from youtubeId or slug
     const idToTitle: Record<string, string> = {};
@@ -133,18 +133,25 @@ export async function GET() {
         registeredAt: row[10],
       }));
 
-    return NextResponse.json({
-      totalRegistrations,
-      totalViews,
-      genderBreakdown,
-      countryBreakdown,
-      stateBreakdown,
-      districtBreakdown,
-      userTypeBreakdown,
-      viewsPerVideo,
-      recentRegistrations,
-      isDemoData: false,
-    });
+    return NextResponse.json(
+      {
+        totalRegistrations,
+        totalViews,
+        genderBreakdown,
+        countryBreakdown,
+        stateBreakdown,
+        districtBreakdown,
+        userTypeBreakdown,
+        viewsPerVideo,
+        recentRegistrations,
+        isDemoData: false,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('[admin/stats] Error:', error);
     return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });

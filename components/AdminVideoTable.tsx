@@ -23,13 +23,15 @@ type SortDir = 'asc' | 'desc';
 
 interface Props {
   baseUrl: string; // e.g. "https://your-domain.com"
+  refreshTrigger?: number;
+  onRefreshed?: (date: Date) => void;
 }
 
 function buildWatchUrl(baseUrl: string, youtubeId: string, language: string): string {
   return `${baseUrl}/watch?video=${encodeURIComponent(youtubeId)}&lang=${encodeURIComponent(language)}`;
 }
 
-export default function AdminVideoTable({ baseUrl }: Props) {
+export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }: Props) {
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,12 +51,32 @@ export default function AdminVideoTable({ baseUrl }: Props) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Copy feedback — tracks which video ID (or 'modal') was just copied
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const onRefreshedRef = useRef(onRefreshed);
   useEffect(() => {
-    fetch('/api/admin/videos')
+    onRefreshedRef.current = onRefreshed;
+  }, [onRefreshed]);
+
+  const loadVideos = useCallback(() => {
+    fetch(`/api/admin/videos?t=${Date.now()}`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json(); })
-      .then(data => { setVideos(data.videos); setIsDemoData(data.isDemoData); setLoading(false); })
-      .catch(() => { setError('Failed to load video data.'); setLoading(false); });
+      .then(data => {
+        setVideos(data.videos || []);
+        setIsDemoData(data.isDemoData);
+        setLoading(false);
+        onRefreshedRef.current?.(new Date());
+      })
+      .catch(() => {
+        setError('Failed to load video data.');
+        setLoading(false);
+      });
   }, []);
+
+  useEffect(() => {
+    loadVideos();
+  }, [loadVideos, refreshTrigger]);
 
   // Generate QR whenever modal opens
   useEffect(() => {
@@ -90,11 +112,11 @@ export default function AdminVideoTable({ baseUrl }: Props) {
     a.click();
   };
 
-  const copyUrl = async (url: string) => {
+  const copyUrl = async (url: string, id: string) => {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      // fallback
+      // fallback for older browsers
       const el = document.createElement('textarea');
       el.value = url;
       document.body.appendChild(el);
@@ -102,6 +124,8 @@ export default function AdminVideoTable({ baseUrl }: Props) {
       document.execCommand('copy');
       document.body.removeChild(el);
     }
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   // Derived data
@@ -240,11 +264,11 @@ export default function AdminVideoTable({ baseUrl }: Props) {
                     </button>
                     <button
                       id={`copy-btn-${v.videoId}`}
-                      className={styles.btnCopy}
-                      onClick={() => copyUrl(watchUrl)}
+                      className={`${styles.btnCopy} ${copiedId === v.videoId ? styles.btnCopied : ''}`}
+                      onClick={() => copyUrl(watchUrl, v.videoId)}
                       title="Copy watch URL"
                     >
-                      📋 Copy URL
+                      {copiedId === v.videoId ? '✅ Copied!' : '📋 Copy URL'}
                     </button>
                   </td>
                 </tr>
@@ -288,10 +312,10 @@ export default function AdminVideoTable({ baseUrl }: Props) {
               </button>
               <button
                 id="qr-copy-url-btn"
-                className={styles.btnCopyUrl}
-                onClick={() => copyUrl(qrModal.url)}
+                className={`${styles.btnCopyUrl} ${copiedId === 'modal' ? styles.btnCopied : ''}`}
+                onClick={() => copyUrl(qrModal.url, 'modal')}
               >
-                📋 Copy URL
+                {copiedId === 'modal' ? '✅ Copied!' : '📋 Copy URL'}
               </button>
             </div>
 

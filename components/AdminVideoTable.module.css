@@ -210,6 +210,12 @@
 }
 .btnCopy:hover { background: rgba(255,255,255,0.08); color: var(--color-text); }
 
+.btnCopied {
+  background: rgba(46, 204, 113, 0.15) !important;
+  color: #2ecc71 !important;
+  border-color: rgba(46, 204, 113, 0.4) !important;
+}
+
 .emptyRow {
   text-align: center;
   padding: 3rem 1rem !important;

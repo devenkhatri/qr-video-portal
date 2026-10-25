@@ -30,7 +30,7 @@ export async function GET() {
     }
 
     // Load videos from Google Sheets (or fallback to videos.json)
-    const allVideos = await getAllVideos();
+    const allVideos = await getAllVideos(true);
 
     // Map both JSON keys and youtubeIds to the canonical videoRow key
     const idToKey: Record<string, string> = {};
@@ -108,7 +108,14 @@ export async function GET() {
       if (videoRows[id]) videoRows[id].uniqueViewers = set.size;
     }
 
-    return NextResponse.json({ videos: Object.values(videoRows), isDemoData: false });
+    return NextResponse.json(
+      { videos: Object.values(videoRows), isDemoData: false },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('[admin/videos] Error:', error);
     return NextResponse.json({ error: 'Failed to fetch video stats' }, { status: 500 });

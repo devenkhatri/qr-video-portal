@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 
@@ -68,6 +69,10 @@ export default function AdminLoginPage() {
             {loading ? 'Signing in...' : 'Sign In →'}
           </button>
         </form>
+
+        <Link href="/" className={styles.backLink}>
+          ← Return to Portal Homepage
+        </Link>
       </div>
     </main>
   );

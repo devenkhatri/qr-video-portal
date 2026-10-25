@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -54,9 +54,24 @@ function sortedTop(data: Record<string, number>, n = 10) {
     .slice(0, n);
 }
 
+function formatRefreshTime(date: Date) {
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+}
+
 export default function AdminCharts() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [videoRefreshTrigger, setVideoRefreshTrigger] = useState(0);
   const [error, setError] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
@@ -65,19 +80,58 @@ export default function AdminCharts() {
     setBaseUrl(window.location.origin);
   }, []);
 
+  const fetchStats = useCallback(async (isInitial = false) => {
+    if (isInitial) setLoading(true);
+    else setIsRefreshing(true);
+    setError('');
+
+    try {
+      const r = await fetch(`/api/admin/stats?t=${Date.now()}`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('Failed to load stats');
+      const data = await r.json();
+      setStats(data);
+      setLastRefreshed(new Date());
+    } catch {
+      if (isInitial) {
+        setError('Failed to load analytics. Please refresh.');
+      }
+    } finally {
+      if (isInitial) setLoading(false);
+      else setIsRefreshing(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetch('/api/admin/stats')
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to load stats');
-        return r.json();
-      })
-      .then(data => { setStats(data); setLoading(false); })
-      .catch(() => { setError('Failed to load analytics. Please refresh.'); setLoading(false); });
+    fetchStats(true);
+  }, [fetchStats]);
+
+  const handleTabChange = (tab: 'charts' | 'videos') => {
+    setActiveTab(tab);
+    if (tab === 'charts') {
+      fetchStats(false);
+    } else {
+      setIsRefreshing(true);
+      setVideoRefreshTrigger(Date.now());
+    }
+  };
+
+  const handleManualRefresh = () => {
+    if (activeTab === 'charts') {
+      fetchStats(false);
+    } else {
+      setIsRefreshing(true);
+      setVideoRefreshTrigger(Date.now());
+    }
+  };
+
+  const handleVideosRefreshed = useCallback((date: Date) => {
+    setLastRefreshed(date);
+    setIsRefreshing(false);
   }, []);
 
   const handleLogout = async () => {
     await fetch('/api/admin/login', { method: 'DELETE' });
-    window.location.href = '/admin/login';
+    window.location.href = '/';
   };
 
   if (loading) {
@@ -179,9 +233,35 @@ export default function AdminCharts() {
           <h1 className={styles.dashTitle}>📊 Analytics Dashboard</h1>
           <p className={styles.dashSub}>QR Video Portal — Live Statistics</p>
         </div>
-        <button className={styles.logoutBtn} onClick={handleLogout}>
-          Sign Out
-        </button>
+        <div className={styles.headerControls}>
+          {lastRefreshed && (
+            <div className={styles.refreshInfo}>
+              <span className={styles.statusDot}>
+                {isRefreshing ? '⏳' : '🟢'}
+              </span>
+              <span className={styles.refreshText}>
+                {isRefreshing ? (
+                  <span>Fetching fresh data…</span>
+                ) : (
+                  <>Last refreshed at: <strong>{formatRefreshTime(lastRefreshed)}</strong></>
+                )}
+              </span>
+              <button
+                id="refresh-data-btn"
+                className={styles.refreshBtn}
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                title="Fetch fresh data from Google Sheet"
+              >
+                <span className={isRefreshing ? styles.spinningIcon : ''}>🔄</span>
+                <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
+              </button>
+            </div>
+          )}
+          <button className={styles.logoutBtn} onClick={handleLogout}>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {stats.isDemoData && (
@@ -198,7 +278,7 @@ export default function AdminCharts() {
         <button
           id="tab-btn-charts"
           className={`${styles.tabBtn} ${activeTab === 'charts' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('charts')}
+          onClick={() => handleTabChange('charts')}
         >
           <span>📊</span>
           <span>Analytics &amp; Charts</span>
@@ -206,7 +286,7 @@ export default function AdminCharts() {
         <button
           id="tab-btn-videos"
           className={`${styles.tabBtn} ${activeTab === 'videos' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('videos')}
+          onClick={() => handleTabChange('videos')}
         >
           <span>🎥</span>
           <span>Video List &amp; QR Codes</span>
@@ -311,7 +391,7 @@ export default function AdminCharts() {
                       <th>Gender</th>
                       <th>State</th>
                       <th>District</th>
-                      <th>Who</th>
+                      <th>User Category</th>
                       <th>Registered At</th>
                     </tr>
                   </thead>
@@ -335,7 +415,13 @@ export default function AdminCharts() {
         </>
       ) : (
         /* Video List & QR Codes Tab */
-        baseUrl && <AdminVideoTable baseUrl={baseUrl} />
+        baseUrl && (
+          <AdminVideoTable
+            baseUrl={baseUrl}
+            refreshTrigger={videoRefreshTrigger}
+            onRefreshed={handleVideosRefreshed}
+          />
+        )
       )}
     </div>
   );
