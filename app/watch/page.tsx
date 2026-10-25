@@ -10,11 +10,31 @@ interface WatchPageProps {
 export async function generateMetadata({ searchParams }: WatchPageProps): Promise<Metadata> {
   const { video: queryParam } = await searchParams;
   const video = queryParam ? await findVideo(queryParam) : null;
+  const title = video ? `${video.title} | Medical Video Portal` : 'Medical Video Portal';
+  const description = video?.description || 'Watch educational clinical videos with instant QR code access.';
 
   return {
-    title: video ? `${video.title} | Medical Video Portal` : 'Medical Video Portal',
-    description: video?.description || 'Watch educational medical videos.',
+    title,
+    description,
     robots: { index: false }, // Never index watch pages — videos are unlisted
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 675,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og-image.jpg'],
+    },
   };
 }
 
