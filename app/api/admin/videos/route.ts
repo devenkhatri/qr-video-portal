@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export interface VideoRow {
   videoId: string;
+  youtubeId: string;
   title: string;
   language: string;
   category: string;
@@ -31,11 +32,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Map both JSON keys and youtubeIds to the canonical videoRow key
+    const idToKey: Record<string, string> = {};
+
     // Build base rows from videos.json config
     const videoRows: Record<string, VideoRow> = {};
     for (const [videoId, v] of Object.entries(allVideos)) {
+      idToKey[videoId] = videoId;
+      if (v.youtubeId) {
+        idToKey[v.youtubeId] = videoId;
+      }
+
       videoRows[videoId] = {
         videoId,
+        youtubeId: v.youtubeId,
         title: v.title,
         language: v.language,
         category: v.category,
@@ -68,15 +78,16 @@ export async function GET() {
     const events = analyticsRows.filter(r => r[0] !== 'event_id' && r[0]);
 
     for (const row of events) {
-      const vid = row[1];
-      if (!vid || !videoRows[vid]) continue;
+      const rawVid = row[1];
+      const vidKey = idToKey[rawVid];
+      if (!vidKey || !videoRows[vidKey]) continue;
       const watchedAt = row[3];
 
-      videoRows[vid].views += 1;
+      videoRows[vidKey].views += 1;
 
-      // Track last viewed timestamp (unique viewers counted in the second pass below)
-      if (watchedAt && (!videoRows[vid].lastViewed || watchedAt > videoRows[vid].lastViewed!)) {
-        videoRows[vid].lastViewed = watchedAt;
+      // Track last viewed timestamp
+      if (watchedAt && (!videoRows[vidKey].lastViewed || watchedAt > videoRows[vidKey].lastViewed!)) {
+        videoRows[vidKey].lastViewed = watchedAt;
       }
     }
 
@@ -86,10 +97,11 @@ export async function GET() {
       uniqueViewerSets[id] = new Set();
     }
     for (const row of events) {
-      const vid = row[1];
+      const rawVid = row[1];
+      const vidKey = idToKey[rawVid];
       const uid = row[2];
-      if (vid && uid && uniqueViewerSets[vid]) {
-        uniqueViewerSets[vid].add(uid);
+      if (vidKey && uid && uniqueViewerSets[vidKey]) {
+        uniqueViewerSets[vidKey].add(uid);
       }
     }
     for (const [id, set] of Object.entries(uniqueViewerSets)) {

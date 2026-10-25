@@ -7,6 +7,7 @@ import styles from './AdminVideoTable.module.css';
 
 interface VideoRow {
   videoId: string;
+  youtubeId: string;
   title: string;
   language: string;
   category: string;
@@ -24,8 +25,8 @@ interface Props {
   baseUrl: string; // e.g. "https://your-domain.com"
 }
 
-function buildWatchUrl(baseUrl: string, videoId: string, language: string): string {
-  return `${baseUrl}/watch?video=${encodeURIComponent(videoId)}&lang=${encodeURIComponent(language)}`;
+function buildWatchUrl(baseUrl: string, youtubeId: string, language: string): string {
+  return `${baseUrl}/watch?video=${encodeURIComponent(youtubeId)}&lang=${encodeURIComponent(language)}`;
 }
 
 export default function AdminVideoTable({ baseUrl }: Props) {
@@ -75,8 +76,8 @@ export default function AdminVideoTable({ baseUrl }: Props) {
   };
 
   const openQr = useCallback((video: VideoRow) => {
-    const url = buildWatchUrl(baseUrl, video.videoId, video.language);
-    setQrModal({ videoId: video.videoId, title: video.title, url });
+    const url = buildWatchUrl(baseUrl, video.youtubeId, video.language);
+    setQrModal({ videoId: video.youtubeId, title: video.title, url });
   }, [baseUrl]);
 
   const closeQr = () => setQrModal(null);
@@ -205,12 +206,12 @@ export default function AdminVideoTable({ baseUrl }: Props) {
             {filtered.length === 0 ? (
               <tr><td colSpan={7} className={styles.emptyRow}>No videos match your filters</td></tr>
             ) : filtered.map(v => {
-              const watchUrl = buildWatchUrl(baseUrl, v.videoId, v.language);
+              const watchUrl = buildWatchUrl(baseUrl, v.youtubeId, v.language);
               return (
                 <tr key={v.videoId} className={styles.row}>
                   <td className={styles.tdTitle}>
                     <div className={styles.titleMain}>{v.title}</div>
-                    <div className={styles.titleSub}>ID: {v.videoId}</div>
+                    <div className={styles.titleSub}>ID: {v.videoId} • YouTube: <code>{v.youtubeId}</code></div>
                     <div className={styles.tagList}>
                       {v.tags.map(t => <span key={t} className={styles.tag}>{t}</span>)}
                     </div>

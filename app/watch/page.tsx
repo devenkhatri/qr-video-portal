@@ -10,9 +10,14 @@ interface WatchPageProps {
 
 const allVideos = videos as Record<string, VideoConfig>;
 
+// Find a video entry by its YouTube ID (the value used in the URL ?video= param), with fallback to JSON key
+function findVideo(param: string): VideoConfig | null {
+  return Object.values(allVideos).find(v => v.youtubeId === param) ?? allVideos[param] ?? null;
+}
+
 export async function generateMetadata({ searchParams }: WatchPageProps): Promise<Metadata> {
-  const { video: videoId } = await searchParams;
-  const video = videoId ? allVideos[videoId] : null;
+  const { video: queryParam } = await searchParams;
+  const video = queryParam ? findVideo(queryParam) : null;
 
   return {
     title: video ? `${video.title} | Medical Video Portal` : 'Medical Video Portal',
@@ -22,9 +27,10 @@ export async function generateMetadata({ searchParams }: WatchPageProps): Promis
 }
 
 export default async function WatchPage({ searchParams }: WatchPageProps) {
-  const { video: videoId, lang } = await searchParams;
+  const { video: queryParam, lang } = await searchParams;
+  const video = queryParam ? findVideo(queryParam) : null;
 
-  if (!videoId || !allVideos[videoId]) {
+  if (!queryParam || !video) {
     return (
       <div className={styles.errorPage}>
         <div className={styles.errorCard}>
@@ -38,13 +44,14 @@ export default async function WatchPage({ searchParams }: WatchPageProps) {
     );
   }
 
-  const video = allVideos[videoId];
   // Use URL lang param, fallback to the video's configured language
   const language = lang || video.language;
 
   return (
     <main className={styles.main}>
-      <WatchClient videoId={videoId} video={video} language={language} />
+      {/* Consistently pass youtubeId for analytics tracking */}
+      <WatchClient videoId={video.youtubeId} video={video} language={language} />
     </main>
   );
 }
+

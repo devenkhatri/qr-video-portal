@@ -3,8 +3,12 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
+import videos from '@/data/videos.json';
+import { VideoConfig } from '@/types/video';
 
 export const dynamic = 'force-dynamic';
+
+const allVideos = videos as Record<string, VideoConfig>;
 
 export async function GET() {
   try {
@@ -15,6 +19,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Build reverse map to look up video title from youtubeId or slug
+    const idToTitle: Record<string, string> = {};
+    for (const [key, v] of Object.entries(allVideos)) {
+      idToTitle[key] = v.title;
+      if (v.youtubeId) {
+        idToTitle[v.youtubeId] = v.title;
+      }
+    }
+
     // Fallback demo data if Google Sheets is not yet configured
     if (!SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
       return NextResponse.json({
@@ -23,7 +36,11 @@ export async function GET() {
         genderBreakdown: { 'Male': 8, 'Female': 5, 'Prefer not to say': 1 },
         regionBreakdown: { 'Mumbai': 6, 'Delhi': 4, 'Bengaluru': 3, 'Pune': 1 },
         professionBreakdown: { 'Cardiologist': 7, 'General Physician': 5, 'Resident': 2 },
-        viewsPerVideo: { 'intro-cardiac': 25, 'diabetes-basics': 12, 'hypertension-101': 5 },
+        viewsPerVideo: {
+          'Introduction to Cardiac Health': 25,
+          'Understanding Type 2 Diabetes': 12,
+          'Managing Hypertension Daily': 5,
+        },
         recentRegistrations: [
           { userId: 'demo-1', name: 'Dr. A. Sharma', gender: 'Male', region: 'Mumbai', profession: 'Cardiologist', registeredAt: new Date().toISOString() },
           { userId: 'demo-2', name: 'Dr. P. Patel', gender: 'Female', region: 'Delhi', profession: 'General Physician', registeredAt: new Date(Date.now() - 3600000).toISOString() },
@@ -81,8 +98,9 @@ export async function GET() {
 
     for (const row of analytics) {
       // [eventId, videoId, userId, watched_at]
-      const videoId = row[1] || 'unknown';
-      viewsPerVideo[videoId] = (viewsPerVideo[videoId] || 0) + 1;
+      const rawVid = row[1] || 'unknown';
+      const label = idToTitle[rawVid] || rawVid;
+      viewsPerVideo[label] = (viewsPerVideo[label] || 0) + 1;
     }
 
     // Recent registrations (last 10)
