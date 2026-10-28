@@ -4,6 +4,7 @@ import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
 import { getAllVideos } from '@/lib/videos';
+import { normalizeMobile } from '@/lib/mobile';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,11 +76,21 @@ export async function GET() {
     const analyticsRows = analyticsResponse.data.values || [];
 
     // Skip header row if it exists
-    const registrations = regRows.filter(row => row[0] !== 'user_id' && row[0]);
+    const rawRegistrations = regRows.filter(row => row[0] !== 'user_id' && row[0]);
     const analytics = analyticsRows.filter(row => row[0] !== 'event_id' && row[0]);
 
+    // --- Deduplicate registrations by clean mobile number (or userId) ---
+    // Preserves the latest entry per unique person to prevent double counting
+    const uniqueMap = new Map<string, string[]>();
+    for (const row of rawRegistrations) {
+      const cleanMob = normalizeMobile(row[4]);
+      const key = cleanMob || row[0];
+      uniqueMap.set(key, row);
+    }
+    const registrations = Array.from(uniqueMap.values());
+
     // --- Aggregate registrations ---
-    // New column layout:
+    // Column layout:
     // [0] userId, [1] name, [2] age, [3] gender, [4] mobile, [5] email,
     // [6] country, [7] state, [8] district, [9] userType, [10] registered_at
     const totalRegistrations = registrations.length;

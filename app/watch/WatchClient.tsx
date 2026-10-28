@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import RegistrationForm from '@/components/RegistrationForm';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { VideoConfig } from '@/types/video';
+import { getClientCookie, setClientCookie } from '@/lib/mobile';
 import styles from './WatchClient.module.css';
 
 interface WatchClientProps {
@@ -18,25 +19,52 @@ type ViewState = 'loading' | 'form' | 'player';
 export default function WatchClient({ videoId, video, language }: WatchClientProps) {
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [userId, setUserId] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
+    // Check both cookie and localStorage for registration status
+    const cookieRegistered = getClientCookie('qr_user_registered') === 'true';
+    const localRegistered = localStorage.getItem('user_registered') === 'true';
+    const isRegistered = cookieRegistered || localRegistered;
+
     // Get or create persistent user ID
-    let uid = localStorage.getItem('user_id');
+    let uid = localStorage.getItem('user_id') || getClientCookie('qr_user_id');
     if (!uid) {
       uid = uuidv4();
     }
     setUserId(uid);
 
-    // Check registration status
-    const isRegistered = localStorage.getItem('user_registered') === 'true';
+    // Retrieve user name if available
+    const storedName = localStorage.getItem('user_name') || getClientCookie('qr_user_name') || '';
+    if (storedName) {
+      setUserName(storedName);
+    }
+
     if (isRegistered) {
+      // Sync across both storage types for maximum persistence
+      try {
+        localStorage.setItem('user_registered', 'true');
+        localStorage.setItem('user_id', uid);
+        if (storedName) localStorage.setItem('user_name', storedName);
+      } catch (e) {
+        console.warn('LocalStorage not accessible', e);
+      }
+      setClientCookie('qr_user_registered', 'true');
+      setClientCookie('qr_user_id', uid);
+      if (storedName) setClientCookie('qr_user_name', storedName);
       setViewState('player');
     } else {
       setViewState('form');
     }
   }, []);
 
-  const handleRegistrationSuccess = useCallback(() => {
+  const handleRegistrationSuccess = useCallback((registeredUserId?: string, registeredUserName?: string) => {
+    if (registeredUserId) {
+      setUserId(registeredUserId);
+    }
+    if (registeredUserName) {
+      setUserName(registeredUserName);
+    }
     setViewState('player');
   }, []);
 
@@ -80,9 +108,20 @@ export default function WatchClient({ videoId, video, language }: WatchClientPro
           </svg>
           Medical Video Portal
         </div>
-        {language && (
-          <span className={styles.langBadge}>🌐 {language.toUpperCase()}</span>
-        )}
+        <div className={styles.headerRight}>
+          {userName && (
+            <div className={styles.userBadge} title={`Logged in as ${userName}`}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={styles.userIcon}>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span className={styles.userName}>{userName}</span>
+            </div>
+          )}
+          {language && (
+            <span className={styles.langBadge}>🌐 {language.toUpperCase()}</span>
+          )}
+        </div>
       </div>
       <YouTubePlayer
         youtubeId={video.youtubeId}

@@ -55,6 +55,38 @@
   color: var(--color-primary);
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.userBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  max-width: 180px;
+}
+
+.userIcon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.userName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
 .langBadge {
   font-size: 0.7rem;
   font-weight: 700;
@@ -63,4 +95,16 @@
   background: var(--color-border);
   padding: 2px 8px;
   border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .playerHeader {
+    padding: var(--space-3) var(--space-4);
+  }
+  .userBadge {
+    max-width: 125px;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+  }
 }

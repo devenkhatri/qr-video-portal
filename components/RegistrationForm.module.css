@@ -305,3 +305,133 @@
   color: var(--color-text-dim);
   line-height: 1.5;
 }
+
+/* Progressive Mobile-First Styles */
+.mobileInputWrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobileInputWrap:focus-within {
+  border-color: var(--color-primary);
+  background: rgba(79, 156, 249, 0.06);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.countryCodePrefix {
+  padding: 11px 12px 11px 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-right: 1px solid var(--color-border);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mobileFieldInput {
+  border: none;
+  background: transparent;
+  flex: 1;
+  padding: 11px 14px;
+  min-height: 46px;
+  font-size: 17px;
+  font-family: var(--font);
+  color: var(--color-text);
+  outline: none;
+  letter-spacing: 0.05em;
+  width: 100%;
+}
+
+.mobileFieldInput::placeholder {
+  color: var(--color-text-dim);
+  letter-spacing: normal;
+}
+
+.welcomeBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.35);
+  border-radius: var(--radius-md);
+  color: #2ecc71;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  animation: slideUp 0.3s ease;
+}
+
+.mobileConfirmedBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(79, 156, 249, 0.08);
+  border: 1px solid rgba(79, 156, 249, 0.25);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.mobileConfirmedInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobileConfirmedLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.mobileConfirmedValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.changeMobileBtn {
+  background: transparent;
+  border: 1px solid rgba(79, 156, 249, 0.4);
+  color: var(--color-primary);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font);
+}
+
+.changeMobileBtn:hover {
+  background: rgba(79, 156, 249, 0.15);
+  border-color: var(--color-primary);
+}
+
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(79, 156, 249, 0.12);
+  border: 1px solid rgba(79, 156, 249, 0.25);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
