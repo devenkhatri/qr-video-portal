@@ -38,6 +38,131 @@ function buildWatchUrl(baseUrl: string, youtubeId: string, language: string): st
   return `${baseUrl}/watch?video=${encodeURIComponent(youtubeId)}&lang=${encodeURIComponent(language)}`;
 }
 
+/**
+ * Wraps text onto multiple lines to fit a given maxWidth on an HTML5 canvas.
+ */
+function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const width = ctx.measureText(testLine).width;
+    if (width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  return lines;
+}
+
+/**
+ * Generates a high-resolution, print-ready QR card with the video title and portal subtext.
+ */
+async function generateCompositeQr(
+  url: string,
+  title: string,
+  subtext = 'Medical Video Portal • Scan to Watch'
+): Promise<string> {
+  // 1. Generate base high-res QR code
+  const baseQrDataUrl = await QRCode.toDataURL(url, {
+    width: 600,
+    margin: 2,
+    color: { dark: '#0f172a', light: '#ffffff' },
+    errorCorrectionLevel: 'M',
+  });
+
+  // 2. Load into an Image object
+  const qrImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = baseQrDataUrl;
+  });
+
+  // 3. Layout geometry with prominent, readable typography
+  const cardWidth = 720;
+  const qrSize = 500;
+  const paddingX = 40;
+  const maxTextWidth = cardWidth - paddingX * 2;
+
+  // Measurement canvas for text
+  const measureCanvas = document.createElement('canvas');
+  const measureCtx = measureCanvas.getContext('2d');
+  if (!measureCtx) return baseQrDataUrl;
+
+  // Prominent font sizes: 38px title (34px for very long titles) and 22px subtext
+  const effectiveTitle = title?.trim() || 'Educational Video';
+  const titleFontSize = effectiveTitle.length > 50 ? 34 : 38;
+  const titleLineHeight = titleFontSize + 14;
+  const subtextFontSize = 22;
+  const subtextLineHeight = 32;
+
+  measureCtx.font = `bold ${titleFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+  const titleLines = wrapCanvasText(measureCtx, effectiveTitle, maxTextWidth);
+
+  const topPadding = 40;
+  const qrToTitleGap = 30;
+  const titleToSubtextGap = 14;
+  const bottomPadding = 44;
+
+  const titleBlockHeight = titleLines.length * titleLineHeight;
+  const subtextBlockHeight = subtext ? titleToSubtextGap + subtextLineHeight : 0;
+  const cardHeight = topPadding + qrSize + qrToTitleGap + titleBlockHeight + subtextBlockHeight + bottomPadding;
+
+  // 4. Create final composite canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = cardWidth;
+  canvas.height = cardHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return baseQrDataUrl;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Fill card background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, cardWidth, cardHeight);
+
+  // Subtle clean card border
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1.5, 1.5, cardWidth - 3, cardHeight - 3);
+
+  // Draw QR code centered
+  const qrX = (cardWidth - qrSize) / 2;
+  const qrY = topPadding;
+  ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+
+  // Draw Title (Centered, bold slate-900)
+  ctx.fillStyle = '#0f172a';
+  ctx.font = `bold ${titleFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  let textY = qrY + qrSize + qrToTitleGap + titleLineHeight / 2;
+  for (const line of titleLines) {
+    ctx.fillText(line, cardWidth / 2, textY);
+    textY += titleLineHeight;
+  }
+
+  // Draw Subtext (Centered, slate-600)
+  if (subtext) {
+    ctx.fillStyle = '#475569';
+    ctx.font = `600 ${subtextFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+    ctx.fillText(subtext, cardWidth / 2, textY + titleToSubtextGap / 2);
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
 export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }: Props) {
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,14 +229,32 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
     loadVideos();
   }, [loadVideos, refreshTrigger]);
 
-  // Generate QR whenever modal opens
+  // Generate print-ready composite QR card whenever modal opens
   useEffect(() => {
-    if (!qrModal) { setQrDataUrl(''); return; }
-    QRCode.toDataURL(qrModal.url, {
-      width: 320,
-      margin: 2,
-      color: { dark: '#111827', light: '#FFFFFF' },
-    }).then(setQrDataUrl).catch(() => setQrDataUrl(''));
+    if (!qrModal) {
+      setQrDataUrl('');
+      return;
+    }
+    let isCurrent = true;
+    generateCompositeQr(qrModal.url, qrModal.title)
+      .then(url => {
+        if (isCurrent) setQrDataUrl(url);
+      })
+      .catch(err => {
+        console.error('Error generating composite QR:', err);
+        // Fallback to basic QR code if canvas fails
+        QRCode.toDataURL(qrModal.url, { width: 320, margin: 2 })
+          .then(fallbackUrl => {
+            if (isCurrent) setQrDataUrl(fallbackUrl);
+          })
+          .catch(() => {
+            if (isCurrent) setQrDataUrl('');
+          });
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [qrModal]);
 
   const handleSort = (key: SortKey) => {
@@ -216,8 +359,13 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
     if (!qrDataUrl || !qrModal) return;
     const a = document.createElement('a');
     a.href = qrDataUrl;
-    a.download = `qr-${qrModal.videoId}.png`;
+    const slug = qrModal.title
+      ? qrModal.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      : qrModal.videoId;
+    a.download = `qr-${slug || 'video'}.png`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
   };
 
   const copyUrl = async (url: string, id: string) => {
@@ -410,7 +558,7 @@ export default function AdminVideoTable({ baseUrl, refreshTrigger, onRefreshed }
 
             <div className={styles.qrWrap}>
               {qrDataUrl
-                ? <Image src={qrDataUrl} alt={`QR code for ${qrModal.title}`} className={styles.qrImage} width={240} height={240} unoptimized />
+                ? <Image src={qrDataUrl} alt={`QR code card for ${qrModal.title}`} className={styles.qrImage} width={330} height={420} unoptimized />
                 : <div className={styles.qrLoading}>Generating…</div>
               }
             </div>
