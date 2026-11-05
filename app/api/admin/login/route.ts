@@ -3,6 +3,19 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    return NextResponse.json({ isAdmin: Boolean(session.isAdmin) });
+  } catch (error) {
+    console.error('[admin/login GET] Error:', error);
+    return NextResponse.json({ isAdmin: false });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { password } = await req.json();

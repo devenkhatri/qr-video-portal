@@ -6,3 +6,7 @@ export interface VideoConfig {
   category: string;
   tags: string[];
 }
+
+export interface VideoItem extends VideoConfig {
+  id: string;
+}

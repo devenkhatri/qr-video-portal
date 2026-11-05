@@ -1,5 +1,10 @@
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { getIronSession } from 'iron-session';
+import { sessionOptions, SessionData } from '@/lib/session';
 import { findVideo } from '@/lib/videos';
+import Link from 'next/link';
+import SiteHeader from '@/components/SiteHeader';
 import WatchClient from './WatchClient';
 import styles from './watch.module.css';
 
@@ -39,18 +44,28 @@ export async function generateMetadata({ searchParams }: WatchPageProps): Promis
 }
 
 export default async function WatchPage({ searchParams }: WatchPageProps) {
+  const cookieStore = await cookies();
+  const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+  const isAdmin = Boolean(session.isAdmin);
+
   const { video: queryParam, lang } = await searchParams;
   const video = queryParam ? await findVideo(queryParam) : null;
 
   if (!queryParam || !video) {
     return (
       <div className={styles.errorPage}>
-        <div className={styles.errorCard}>
-          <div className={styles.errorIcon}>⚠️</div>
-          <h1 className={styles.errorTitle}>Invalid QR Code</h1>
-          <p className={styles.errorMsg}>
-            This QR code does not point to a valid video. Please scan the correct code from your guidebook.
-          </p>
+        <SiteHeader isAdmin={isAdmin} showHomeLink />
+        <div className={styles.errorContentWrapper}>
+          <div className={styles.errorCard}>
+            <div className={styles.errorIcon}>⚠️</div>
+            <h1 className={styles.errorTitle}>Invalid QR Code</h1>
+            <p className={styles.errorMsg}>
+              This QR code does not point to a valid video. Please scan the correct code from your guidebook or browse our full video library.
+            </p>
+            <Link href="/" className={styles.backHomeBtn}>
+              ← Browse Video Library
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -61,9 +76,13 @@ export default async function WatchPage({ searchParams }: WatchPageProps) {
 
   return (
     <main className={styles.main}>
-      {/* Consistently pass youtubeId for analytics tracking */}
-      <WatchClient videoId={video.youtubeId} video={video} language={language} />
+      {/* Consistently pass youtubeId for analytics tracking and admin status for header */}
+      <WatchClient
+        videoId={video.youtubeId}
+        video={video}
+        language={language}
+        isAdmin={isAdmin}
+      />
     </main>
   );
 }
-

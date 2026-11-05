@@ -4,10 +4,17 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--color-bg);
+}
+
+.loadingBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-4);
-  background: var(--color-bg);
+  padding: var(--space-8);
 }
 
 .loadingSpinner {
@@ -28,6 +35,13 @@
   font-size: var(--font-size-base);
 }
 
+.formScreen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
 /* Player screen */
 .playerScreen {
   min-height: 100vh;
@@ -35,30 +49,6 @@
   display: flex;
   flex-direction: column;
   padding-bottom: var(--space-10);
-}
-
-.playerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
 }
 
 .userBadge {
@@ -92,16 +82,14 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
-  background: var(--color-border);
-  padding: 2px 8px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
 }
 
 @media (max-width: 480px) {
-  .playerHeader {
-    padding: var(--space-3) var(--space-4);
-  }
   .userBadge {
     max-width: 125px;
     font-size: 0.7rem;

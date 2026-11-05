@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import RegistrationForm from '@/components/RegistrationForm';
 import YouTubePlayer from '@/components/YouTubePlayer';
+import SiteHeader from '@/components/SiteHeader';
 import { VideoConfig } from '@/types/video';
 import { getClientCookie, setClientCookie } from '@/lib/mobile';
 import styles from './WatchClient.module.css';
@@ -12,11 +13,12 @@ interface WatchClientProps {
   videoId: string;
   video: VideoConfig;
   language: string;
+  isAdmin?: boolean;
 }
 
 type ViewState = 'loading' | 'form' | 'player';
 
-export default function WatchClient({ videoId, video, language }: WatchClientProps) {
+export default function WatchClient({ videoId, video, language, isAdmin }: WatchClientProps) {
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [userId, setUserId] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -80,49 +82,54 @@ export default function WatchClient({ videoId, video, language }: WatchClientPro
     });
   }, [videoId, userId, language]);
 
+  const renderStatusBadges = () => (
+    <>
+      {userName && (
+        <div className={styles.userBadge} title={`Logged in as ${userName}`}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={styles.userIcon} aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span className={styles.userName}>{userName}</span>
+        </div>
+      )}
+      {language && (
+        <span className={styles.langBadge}>🌐 {language.toUpperCase()}</span>
+      )}
+    </>
+  );
+
   if (viewState === 'loading') {
     return (
       <div className={styles.loadingScreen}>
-        <div className={styles.loadingSpinner} />
-        <p className={styles.loadingText}>Loading...</p>
+        <SiteHeader isAdmin={isAdmin} showHomeLink extraRight={renderStatusBadges()} />
+        <div className={styles.loadingBody}>
+          <div className={styles.loadingSpinner} />
+          <p className={styles.loadingText}>Loading video...</p>
+        </div>
       </div>
     );
   }
 
   if (viewState === 'form') {
     return (
-      <RegistrationForm
-        userId={userId}
-        onSuccess={handleRegistrationSuccess}
-      />
+      <div className={styles.formScreen}>
+        <SiteHeader isAdmin={isAdmin} showHomeLink extraRight={renderStatusBadges()} />
+        <RegistrationForm
+          userId={userId}
+          onSuccess={handleRegistrationSuccess}
+        />
+      </div>
     );
   }
 
   return (
     <div className={styles.playerScreen}>
-      <div className={styles.playerHeader}>
-        <div className={styles.logo}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.54C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
-            <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
-          </svg>
-          Medical Video Portal
-        </div>
-        <div className={styles.headerRight}>
-          {userName && (
-            <div className={styles.userBadge} title={`Logged in as ${userName}`}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={styles.userIcon}>
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className={styles.userName}>{userName}</span>
-            </div>
-          )}
-          {language && (
-            <span className={styles.langBadge}>🌐 {language.toUpperCase()}</span>
-          )}
-        </div>
-      </div>
+      <SiteHeader
+        isAdmin={isAdmin}
+        showHomeLink
+        extraRight={renderStatusBadges()}
+      />
       <YouTubePlayer
         youtubeId={video.youtubeId}
         title={video.title}
