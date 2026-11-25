@@ -6,6 +6,7 @@ import { LANGUAGES, type Lang } from '@/lib/languages';
 import { STRINGS } from '@/lib/strings';
 import { SITE_NAME } from '@/lib/site';
 import { IconChevron, IconQr } from './admin/icons';
+import UserChip from './UserChip';
 import styles from './SiteHeader.module.css';
 
 interface SiteHeaderProps {
@@ -66,6 +67,8 @@ export default function SiteHeader({ lang, back, isAdmin }: SiteHeaderProps) {
               ))}
             </nav>
           )}
+
+          <UserChip lang={lang} />
         </div>
       </div>
     </header>

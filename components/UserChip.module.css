@@ -1,0 +1,55 @@
+.wrap { position: relative; flex: none; }
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.avatar:hover { border-color: rgba(79, 156, 249, 0.5); }
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 50;
+  min-width: 200px;
+  max-width: calc(100vw - 24px);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface, #14181f);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.hello {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.signOut {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: start;
+  cursor: pointer;
+}
+.signOut:hover { color: var(--color-text); background: rgba(255, 255, 255, 0.06); }
