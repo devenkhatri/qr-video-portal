@@ -66,9 +66,16 @@ export default async function HomePage() {
               <h2 id="inside-title" className={styles.insideTitle} lang="gu">{t.insideTitle}</h2>
               <ul className={styles.chips}>
                 {chapters.map(c => (
-                  <li key={c.id} className={styles.chip} style={{ ['--accent' as string]: accentFor(c.order) }} lang="gu">
-                    <span aria-hidden="true">{c.icon}</span>
-                    <span>{c.title}</span>
+                  <li key={c.id}>
+                    <Link
+                      href={`/guide/${encodeURIComponent(c.id)}?lang=gu`}
+                      className={styles.chip}
+                      style={{ ['--accent' as string]: accentFor(c.order) }}
+                      lang="gu"
+                    >
+                      <span aria-hidden="true">{c.icon}</span>
+                      <span>{c.title}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
