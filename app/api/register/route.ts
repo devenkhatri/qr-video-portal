@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       district,
       userType,
       userTypeOther,
+      source,
     } = body;
 
     if (!userId || !name) {
@@ -24,6 +25,12 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanMobile = normalizeMobile(mobile);
+    // Campaign tag from ?src=; sanitised again here because the client value is untrusted
+    const cleanSource = String(source || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40);
 
     // Resolve effective user type label (handle "Other" with specify text)
     const effectiveUserType =
@@ -62,6 +69,7 @@ export async function POST(req: NextRequest) {
 
     // Check for existing registration with the same mobile number to avoid duplicate entries
     let existingRowIndex = -1;
+    let existingSource = '';
     let effectiveUserId = userId;
 
     if (cleanMobile) {
@@ -78,6 +86,7 @@ export async function POST(req: NextRequest) {
           if (normalizeMobile(row[4]) === cleanMobile) {
             existingRowIndex = i + 1; // 1-based index for Google Sheets row
             if (row[0]) effectiveUserId = row[0];
+            existingSource = row[11] || '';
             break;
           }
         }
@@ -98,13 +107,15 @@ export async function POST(req: NextRequest) {
       district || '',
       effectiveUserType,
       new Date().toISOString(),
+      // First touch wins: re-registering must not erase or change the original campaign
+      existingSource || cleanSource,
     ];
 
     if (existingRowIndex > 0) {
       // Update existing row rather than appending duplicate
       await sheets.spreadsheets.values.update({
         spreadsheetId: SHEET_ID,
-        range: `registrations!A${existingRowIndex}:K${existingRowIndex}`,
+        range: `registrations!A${existingRowIndex}:L${existingRowIndex}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
           values: [rowValues],

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { normalizeMobile, isValidMobile, setClientCookie } from '@/lib/mobile';
+import { normalizeMobile, isValidMobile, setClientCookie, getClientCookie } from '@/lib/mobile';
 import type { Lang } from '@/lib/languages';
 import { GENDERS, REG, USER_TYPES } from '@/lib/registrationStrings';
 import styles from './RegistrationForm.module.css';
@@ -150,7 +150,7 @@ export default function RegistrationForm({ onSuccess, userId, lang = 'gu' }: Reg
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, ...formData, mobile: cleanMob }),
+        body: JSON.stringify({ userId, ...formData, mobile: cleanMob, source: getClientCookie('qr_src') || '' }),
       });
 
       if (!res.ok) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import QRCode from 'qrcode';
 import { IconCheck, IconClose, IconCopy } from './admin/icons';
@@ -17,6 +17,18 @@ export interface QrTarget {
 interface QrModalProps {
   target: QrTarget;
   onClose: () => void;
+  /** Admin only: lets the admin tag the QR with a campaign (?src=...) to attribute registrations. */
+  allowSource?: boolean;
+}
+
+/** Keeps campaign tags URL- and spreadsheet-safe: lowercase letters, digits, dashes. */
+export function cleanSource(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+}
+
+function withSource(url: string, source: string): string {
+  if (!source) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}src=${encodeURIComponent(source)}`;
 }
 
 const FONT_STACK =
@@ -121,7 +133,13 @@ async function generateCompositeQr(url: string, title: string, subtext: string):
   return canvas.toDataURL('image/png');
 }
 
-export default function QrModal({ target, onClose }: QrModalProps) {
+export default function QrModal({ target: baseTarget, onClose, allowSource }: QrModalProps) {
+  const [source, setSource] = useState('');
+  const cleaned = allowSource ? cleanSource(source) : '';
+  const target = useMemo(
+    () => ({ ...baseTarget, url: withSource(baseTarget.url, cleaned), key: cleaned ? `${baseTarget.key}-${cleaned}` : baseTarget.key }),
+    [baseTarget, cleaned]
+  );
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -190,6 +208,24 @@ export default function QrModal({ target, onClose }: QrModalProps) {
             ? <Image src={qrDataUrl} alt={`QR code card for ${target.title}`} className={styles.qrImage} width={330} height={420} unoptimized />
             : <div className={styles.qrLoading}>Generating…</div>}
         </div>
+
+        {allowSource && (
+          <div className={styles.sourceBox}>
+            <label htmlFor="qr-source" className={styles.sourceLabel}>Campaign tag (optional)</label>
+            <input
+              id="qr-source"
+              className={styles.sourceInput}
+              value={source}
+              onChange={e => setSource(e.target.value)}
+              placeholder="e.g. clinic-ahmedabad"
+              maxLength={60}
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            <span className={styles.sourceHint}>Registrations from this QR are counted under this tag in Analytics.</span>
+          </div>
+        )}
 
         <div className={styles.urlBox}>
           <span className={styles.urlText}>{target.url}</span>

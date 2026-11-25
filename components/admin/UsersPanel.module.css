@@ -1,0 +1,167 @@
+.filters { display: grid; gap: var(--space-3); margin-bottom: var(--space-4); }
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px; /* avoids iOS zoom on focus */
+}
+.input:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+.selects { display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+.summary span { display: inline-flex; align-items: center; gap: 6px; }
+.clear {
+  min-height: 36px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Phone cards */
+.cards { list-style: none; display: grid; gap: var(--space-3); }
+.cardBtn {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.cardBtn:hover { border-color: var(--color-border-hover); }
+.cardTop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.points { color: var(--color-primary); font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.meta { color: var(--color-text-muted); font-size: 0.85rem; }
+
+.tableCard { display: none; padding: 0; overflow-x: auto; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.table th {
+  text-align: left;
+  padding: var(--space-3);
+  color: var(--color-text-dim);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border);
+}
+.table td { padding: var(--space-3); border-bottom: 1px solid rgba(255, 255, 255, 0.04); white-space: nowrap; }
+.row { cursor: pointer; }
+.row:hover td { background: rgba(79, 156, 249, 0.06); }
+.table tbody tr:last-child td { border-bottom: 0; }
+.num { text-align: right !important; font-variant-numeric: tabular-nums; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+.nameBtn { border: 0; background: none; color: var(--color-primary); font: inherit; font-weight: 600; cursor: pointer; padding: 0; }
+.nameBtn:hover { text-decoration: underline; }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Detail drawer: bottom sheet on phones, side panel on larger screens */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+.drawer {
+  width: 100%;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  animation: sheetUp 0.25s ease both;
+}
+@keyframes sheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.drawerHead { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+.drawerTitle { font-size: 1.2rem; font-weight: 750; letter-spacing: -0.01em; }
+.close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; flex: none;
+  border: 0; border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05); color: var(--color-text-muted); cursor: pointer;
+}
+.close:hover { color: var(--color-text); }
+
+.drawerBody { display: grid; gap: var(--space-4); }
+
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.facts dt { color: var(--color-text-dim); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.facts dd { margin: 2px 0 0; font-size: 0.9rem; word-break: break-word; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+.stats > div {
+  display: grid; gap: 2px; justify-items: center; text-align: center;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+}
+.stats strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.stats span { color: var(--color-text-muted); font-size: 0.7rem; }
+
+.sub { margin-top: var(--space-2); font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); }
+
+.progress { list-style: none; display: grid; gap: var(--space-3); }
+.progLabel { display: flex; justify-content: space-between; gap: var(--space-3); font-size: 0.85rem; margin-bottom: 4px; }
+.progLabel small { color: var(--color-text-dim); font-variant-numeric: tabular-nums; }
+.bar { display: block; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.barFill { display: block; height: 100%; border-radius: 3px; background: var(--color-primary); }
+.barDone { background: var(--color-success); }
+
+.timeline { list-style: none; display: grid; }
+.timeline li {
+  display: flex; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+.timeline li:first-child { border-top: 0; }
+.timeline span { display: grid; min-width: 0; }
+.timeline small { color: var(--color-text-dim); font-size: 0.75rem; }
+.timeline time { color: var(--color-text-dim); font-size: 0.75rem; white-space: nowrap; }
+
+@media (min-width: 768px) {
+  .selects { grid-template-columns: repeat(4, 1fr); }
+  .cards { display: none; }
+  .tableCard { display: block; }
+
+  .overlay { align-items: stretch; justify-content: flex-end; }
+  .drawer { width: min(480px, 100%); max-height: none; border-radius: var(--radius-lg) 0 0 var(--radius-lg); animation-name: sideIn; }
+  @keyframes sideIn { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+
+@media (prefers-reduced-motion: reduce) { .drawer { animation: none; } }
