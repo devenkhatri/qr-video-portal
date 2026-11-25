@@ -33,6 +33,7 @@ interface UiStrings {
   continueHint: string;
   resume: string;
   completed: string;
+  overallProgress: string;
   textSize: string;
   smaller: string;
   larger: string;
@@ -78,6 +79,7 @@ export const STRINGS: Record<Lang, UiStrings> = {
     continueHint: 'જ્યાંથી છોડ્યું હતું ત્યાંથી આગળ વધો',
     resume: 'ચાલુ રાખો',
     completed: 'પૂર્ણ',
+    overallProgress: 'તમારી એકંદર પ્રગતિ',
     textSize: 'અક્ષરનું કદ',
     smaller: 'અક્ષર નાના કરો',
     larger: 'અક્ષર મોટા કરો',
@@ -121,6 +123,7 @@ export const STRINGS: Record<Lang, UiStrings> = {
     continueHint: 'जहाँ छोड़ा था, वहीं से आगे बढ़ें',
     resume: 'जारी रखें',
     completed: 'पूरा',
+    overallProgress: 'आपकी कुल प्रगति',
     textSize: 'अक्षर का आकार',
     smaller: 'अक्षर छोटे करें',
     larger: 'अक्षर बड़े करें',
@@ -164,6 +167,7 @@ export const STRINGS: Record<Lang, UiStrings> = {
     continueHint: 'Pick up where you left off',
     resume: 'Continue',
     completed: 'Done',
+    overallProgress: 'Your overall progress',
     textSize: 'Text size',
     smaller: 'Make text smaller',
     larger: 'Make text larger',

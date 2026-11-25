@@ -36,8 +36,31 @@ export default function ChapterCards({ chapters, lang }: ChapterCardsProps) {
     return <p className={styles.empty}>—</p>;
   }
 
+  const total = chapters.reduce((n, c) => n + c.pointCount, 0);
+  const doneTotal = chapters.reduce((n, c) => n + c.pointIds.filter(id => read[id]).length, 0);
+  const overallPercent = total > 0 ? Math.round((doneTotal / total) * 100) : 0;
+
   return (
     <>
+      {doneTotal > 0 && (
+        <div className={styles.overall} lang={lang}>
+          <div className={styles.overallHead}>
+            <span className={styles.overallLabel}>{t.overallProgress}</span>
+            <span className={styles.overallValue}>{doneTotal} / {total} · {overallPercent}%</span>
+          </div>
+          <div
+            className={styles.overallBar}
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={doneTotal}
+            aria-label={t.overallProgress}
+          >
+            <span style={{ width: `${overallPercent}%` }} />
+          </div>
+        </div>
+      )}
+
       <ol className={styles.grid}>
         {chapters.map((c, i) => {
           const done = c.pointIds.filter(id => read[id]).length;

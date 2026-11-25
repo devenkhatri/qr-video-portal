@@ -29,14 +29,7 @@ export default function SiteHeader({ lang, back, isAdmin }: SiteHeaderProps) {
       <a href="#main" className={styles.skip}>{STRINGS[lang ?? 'en'].skipToContent}</a>
 
       <div className={styles.inner}>
-        {back && (
-          <Link href={back.href} className={styles.back} aria-label={back.label}>
-            <IconChevron size={20} className={styles.backIcon} />
-            <span className={styles.backLabel}>{back.label}</span>
-          </Link>
-        )}
-
-        <Link href="/" className={`${styles.brand} ${back ? styles.brandWithBack : ''}`} aria-label={`${SITE_NAME} home`}>
+        <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
           <span className={styles.mark} aria-hidden="true">
             <IconQr size={18} />
           </span>
@@ -44,6 +37,13 @@ export default function SiteHeader({ lang, back, isAdmin }: SiteHeaderProps) {
         </Link>
 
         <div className={styles.right}>
+          {back && (
+            <Link href={back.href} className={styles.back} aria-label={back.label}>
+              <IconChevron size={20} className={styles.backIcon} />
+              <span className={styles.backLabel}>{back.label}</span>
+            </Link>
+          )}
+
           {isAdmin && (
             <Link href="/admin" className={styles.adminPill}>Admin</Link>
           )}

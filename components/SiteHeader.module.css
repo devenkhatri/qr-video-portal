@@ -42,7 +42,6 @@
   gap: 2px;
   min-width: 44px;
   min-height: 44px;
-  margin-left: calc(var(--space-2) * -1);
   padding: 0 var(--space-2);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
@@ -51,6 +50,7 @@
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
+.back { border: 1px solid transparent; }
 .back:hover { background: rgba(255, 255, 255, 0.07); color: var(--color-text); }
 .backIcon { transform: rotate(180deg); }
 .backLabel { display: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.6; }
@@ -86,9 +86,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* With a back button there is less room: let the logo mark carry the brand on narrow phones */
-.brandWithBack .brandName { display: none; }
 
 .right { flex: none; display: flex; align-items: center; gap: var(--space-2); }
 
@@ -141,8 +138,6 @@
 @media (min-width: 640px) {
   .inner { padding: 0 var(--space-6); gap: var(--space-4); min-height: 64px; }
   .backLabel { display: inline; }
-  .brandWithBack .brandName { display: inline; }
-  .brand { flex: 1; }
 }
 
 @media (max-width: 380px) {
