@@ -1,113 +1,70 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LANGUAGES, type Lang } from '@/lib/languages';
+import { STRINGS } from '@/lib/strings';
+import { SITE_NAME } from '@/lib/site';
+import { IconChevron, IconQr } from './admin/icons';
 import styles from './SiteHeader.module.css';
 
 interface SiteHeaderProps {
+  /** When set, the language switcher is shown and keeps the reader on the same page. */
+  lang?: Lang;
+  /** Shows a back button (a chevron on phones, with the label on larger screens). */
+  back?: { href: string; label: string };
+  /** Show a discreet link to the admin dashboard for signed-in admins. */
   isAdmin?: boolean;
-  showHomeLink?: boolean;
-  showGuidebookButton?: boolean;
-  onGuidebookClick?: () => void;
-  guidebookExpanded?: boolean;
-  extraRight?: React.ReactNode;
-  className?: string;
 }
 
-export default function SiteHeader({
-  isAdmin,
-  showHomeLink = false,
-  showGuidebookButton = false,
-  onGuidebookClick,
-  guidebookExpanded = false,
-  extraRight,
-  className = '',
-}: SiteHeaderProps) {
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(Boolean(isAdmin));
+// Short labels keep the switcher compact on small phones; the full name is the accessible label.
+const SHORT: Record<Lang, string> = { gu: 'ગુ', hi: 'हि', en: 'EN' };
 
-  // Client-side verification to handle active session changes
-  useEffect(() => {
-    let isCurrent = true;
-    fetch('/api/admin/login')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch session');
-        return res.json();
-      })
-      .then((data) => {
-        if (isCurrent && typeof data?.isAdmin === 'boolean') {
-          setIsAdminLoggedIn(data.isAdmin);
-        }
-      })
-      .catch(() => {
-        // Fallback silently to initial isAdmin prop
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
+export default function SiteHeader({ lang, back, isAdmin }: SiteHeaderProps) {
+  const pathname = usePathname();
+  const t = lang ? STRINGS[lang] : null;
 
   return (
-    <header className={`${styles.headerWrapper} ${className}`}>
+    <header className={styles.header}>
+      <a href="#main" className={styles.skip}>{STRINGS[lang ?? 'en'].skipToContent}</a>
+
       <div className={styles.inner}>
-        {/* Site Logo & Title - Always points to homepage */}
-        <Link href="/" className={styles.brand} title="Medical Video Portal — Home">
-          <div className={styles.brandIcon} aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="2" width="8" height="8" rx="1.5" />
-              <rect x="14" y="2" width="8" height="8" rx="1.5" />
-              <rect x="2" y="14" width="8" height="8" rx="1.5" />
-              <path d="M14 14h2v2h-2zM16 16h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z" fill="currentColor" />
-            </svg>
-          </div>
-          <div className={styles.brandText}>
-            <span className={styles.brandTitle}>Medical Video Portal</span>
-            <span className={styles.brandSub}>Educational Health Library</span>
-          </div>
+        {back && (
+          <Link href={back.href} className={styles.back} aria-label={back.label}>
+            <IconChevron size={20} className={styles.backIcon} />
+            <span className={styles.backLabel}>{back.label}</span>
+          </Link>
+        )}
+
+        <Link href="/" className={`${styles.brand} ${back ? styles.brandWithBack : ''}`} aria-label={`${SITE_NAME} home`}>
+          <span className={styles.mark} aria-hidden="true">
+            <IconQr size={18} />
+          </span>
+          <span className={styles.brandName}>{SITE_NAME}</span>
         </Link>
 
-        {/* Right-hand Navigation / Status Actions */}
-        <div className={styles.navRight}>
-          {showHomeLink && (
-            <Link href="/" className={styles.homeLink}>
-              <span>←</span>
-              <span>All Videos</span>
-            </Link>
+        <div className={styles.right}>
+          {isAdmin && (
+            <Link href="/admin" className={styles.adminPill}>Admin</Link>
           )}
 
-          {extraRight}
-
-          {showGuidebookButton && onGuidebookClick && (
-            <button
-              type="button"
-              className={styles.guidebookBtn}
-              onClick={onGuidebookClick}
-              aria-expanded={guidebookExpanded}
-            >
-              <span>📖</span>
-              <span>{guidebookExpanded ? 'Hide Guide' : 'Guidebook Help'}</span>
-            </button>
-          )}
-
-          {/* Admin button: Login button is visible ONLY if admin is not already logged in */}
-          {!isAdminLoggedIn ? (
-            <Link href="/admin/login" className={styles.adminLink} title="Admin Login">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <span>Admin Login</span>
-            </Link>
-          ) : (
-            <Link href="/admin" className={styles.adminDashboardLink} title="Open Admin Dashboard">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-              </svg>
-              <span>Admin Dashboard</span>
-            </Link>
+          {lang && (
+            <nav className={styles.langs} aria-label={t?.switchLanguage}>
+              {LANGUAGES.map(l => (
+                <Link
+                  key={l.code}
+                  href={`${pathname}?lang=${l.code}`}
+                  className={`${styles.lang} ${l.code === lang ? styles.langActive : ''}`}
+                  aria-current={l.code === lang ? 'true' : undefined}
+                  aria-label={l.english}
+                  title={l.english}
+                  lang={l.code}
+                  scroll={false}
+                >
+                  {SHORT[l.code]}
+                </Link>
+              ))}
+            </nav>
           )}
         </div>
       </div>

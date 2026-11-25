@@ -2,19 +2,9 @@
 
 import { useState } from 'react';
 import { normalizeMobile, isValidMobile, setClientCookie } from '@/lib/mobile';
+import type { Lang } from '@/lib/languages';
+import { GENDERS, REG, USER_TYPES } from '@/lib/registrationStrings';
 import styles from './RegistrationForm.module.css';
-
-const USER_TYPES = [
-  'Cancer Patient',
-  'Relative of Patient',
-  'Normal Person',
-  'ASHA',
-  'Nurse - Coordinator',
-  'CHO',
-  'Non-cancer Doctor',
-  'Oncologist',
-  'Other',
-];
 
 interface FormData {
   name: string;
@@ -32,9 +22,13 @@ interface FormData {
 interface RegistrationFormProps {
   onSuccess: (userId?: string, userName?: string) => void;
   userId: string;
+  /** Language of the labels and messages. Stored values (gender, role) stay in English. */
+  lang?: Lang;
 }
 
-export default function RegistrationForm({ onSuccess, userId }: RegistrationFormProps) {
+export default function RegistrationForm({ onSuccess, userId, lang = 'gu' }: RegistrationFormProps) {
+  const t = REG[lang];
+
   // Step 1: 'mobile' (phone check), Step 2: 'details' (first-time profile registration)
   const [step, setStep] = useState<'mobile' | 'details'>('mobile');
 
@@ -60,12 +54,10 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle Step 1 Phone Input
   const handleMobileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError('');
     // Allow digits, spaces, and dashes for easy typing/pasting
-    const raw = e.target.value;
-    setMobileInput(raw);
+    setMobileInput(e.target.value);
   };
 
   // Step 1: Check if mobile already exists in Google Sheet
@@ -75,7 +67,7 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
 
     const clean = normalizeMobile(mobileInput);
     if (!clean || !isValidMobile(clean)) {
-      setError('Please enter a valid 10-digit mobile number.');
+      setError(t.mobileInvalid);
       return;
     }
 
@@ -94,10 +86,9 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
       const data = await res.json();
 
       if (data.exists && data.user) {
-        // Returning registered user recognized!
+        // Returning registered user recognized
         const existingId = data.user.userId || userId;
-        const userName = data.user.name || 'Doctor / Friend';
-        setWelcomeUser(userName);
+        setWelcomeUser(data.user.name || '');
 
         // Store registration in both LocalStorage & 1-Year Cookie
         try {
@@ -117,7 +108,7 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
           setClientCookie('qr_user_name', data.user.name);
         }
 
-        // Brief delay for the friendly greeting before loading video
+        // Brief delay for the friendly greeting before the content opens
         setTimeout(() => {
           onSuccess(existingId, data.user.name || '');
         }, 700);
@@ -127,13 +118,12 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
         setStep('details');
       }
     } catch {
-      setError('Could not verify number. Please check your connection and try again.');
+      setError(t.verifyFail);
     } finally {
       setCheckingMobile(false);
     }
   };
 
-  // Handle Step 2 Form Changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -144,30 +134,14 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
     e.preventDefault();
     setError('');
 
-    if (!formData.name.trim()) {
-      setError('Please enter your name.');
-      return;
-    }
+    if (!formData.name.trim()) return setError(t.errors.name);
     if (!formData.age || isNaN(Number(formData.age)) || Number(formData.age) < 1 || Number(formData.age) > 120) {
-      setError('Please enter a valid age.');
-      return;
+      return setError(t.errors.age);
     }
-    if (!formData.gender) {
-      setError('Please select your gender.');
-      return;
-    }
-    if (!formData.district.trim()) {
-      setError('Please enter your district.');
-      return;
-    }
-    if (!formData.userType) {
-      setError('Please select who you are.');
-      return;
-    }
-    if (formData.userType === 'Other' && !formData.userTypeOther.trim()) {
-      setError('Please specify your role.');
-      return;
-    }
+    if (!formData.gender) return setError(t.errors.gender);
+    if (!formData.district.trim()) return setError(t.errors.district);
+    if (!formData.userType) return setError(t.errors.userType);
+    if (formData.userType === 'Other' && !formData.userTypeOther.trim()) return setError(t.errors.other);
 
     setLoading(true);
     try {
@@ -207,50 +181,51 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
 
       onSuccess(effectiveId, registeredName);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(t.errors.generic);
     } finally {
       setLoading(false);
     }
   };
 
+  const Steps = (
+    <ol className={styles.steps} aria-hidden="true">
+      <li className={`${styles.stepDot} ${styles.stepDone}`} />
+      <li className={`${styles.stepDot} ${step === 'details' ? styles.stepDone : ''}`} />
+    </ol>
+  );
+
+  const Spinner = <span className={styles.spinner} aria-hidden="true" />;
+
   // -------------------------------------------------------------
-  // RENDER STEP 1: MOBILE ENTRY (PROGRESSIVE CHECK)
+  // STEP 1: MOBILE NUMBER (a quick check for returning readers)
   // -------------------------------------------------------------
   if (step === 'mobile') {
     return (
-      <div className={styles.container}>
+      <main className={styles.wrap} id="main" lang={lang}>
         <div className={styles.card}>
+          {Steps}
           <div className={styles.header}>
-            <div className={styles.iconWrap}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12.01" y2="18" />
+            <span className={styles.iconWrap} aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+                <path d="M11 18.5h2" />
               </svg>
-            </div>
-            <h1 className={styles.title}>Welcome</h1>
-            <p className={styles.subtitle}>
-              Enter your mobile number to access the video.
-            </p>
+            </span>
+            <h1 className={styles.title}>{t.welcome}</h1>
+            <p className={styles.subtitle}>{t.mobileSubtitle}</p>
           </div>
 
-          <form onSubmit={handleMobileSubmit} className={styles.form}>
+          <form onSubmit={handleMobileSubmit} className={styles.form} noValidate>
             {welcomeUser && (
-              <div className={styles.welcomeBanner}>
-                <span>🟢</span>
-                <span>Welcome back, <strong>{welcomeUser}</strong>! Starting your video…</span>
+              <div className={styles.welcomeBanner} role="status">
+                {t.welcomeBack(welcomeUser)}
               </div>
             )}
 
             <div className={styles.field}>
-              <label htmlFor="mobileInput" className={styles.label}>
-                Mobile Number <span className={styles.required}>*</span>
-              </label>
-
-              <div className={styles.mobileInputWrap}>
-                <div className={styles.countryCodePrefix}>
-                  <span>🇮🇳</span>
-                  <span>+91</span>
-                </div>
+              <label htmlFor="mobileInput" className={styles.label}>{t.mobileLabel}</label>
+              <div className={styles.mobileWrap}>
+                <span className={styles.prefix} aria-hidden="true">+91</span>
                 <input
                   id="mobileInput"
                   name="mobileInput"
@@ -258,302 +233,164 @@ export default function RegistrationForm({ onSuccess, userId }: RegistrationForm
                   inputMode="numeric"
                   pattern="[0-9]*"
                   autoComplete="tel-national"
+                  enterKeyHint="go"
                   autoFocus
                   placeholder="98765 43210"
                   value={mobileInput}
                   onChange={handleMobileInputChange}
-                  className={styles.mobileFieldInput}
+                  className={styles.mobileInput}
                   disabled={checkingMobile || welcomeUser !== null}
                   maxLength={14}
                   required
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? 'reg-error' : undefined}
                 />
               </div>
             </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p id="reg-error" className={styles.error} role="alert">{error}</p>}
 
-            <button
-              type="submit"
-              className={styles.submitBtn}
-              disabled={checkingMobile || welcomeUser !== null}
-            >
-              {checkingMobile ? (
-                <>
-                  <span className={styles.spinner} />
-                  Verifying...
-                </>
-              ) : welcomeUser ? (
-                <>
-                  <span className={styles.spinner} />
-                  Starting Video...
-                </>
-              ) : (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                  Continue to Video
-                </>
-              )}
+            <button type="submit" className={styles.submit} disabled={checkingMobile || welcomeUser !== null}>
+              {checkingMobile ? <>{Spinner}{t.verifying}</> : welcomeUser ? <>{Spinner}{t.starting}</> : t.continue}
             </button>
 
-            <p className={styles.privacy}>
-              🔒 Your mobile number is used to identify your access. No passwords or OTPs required.
-            </p>
+            <p className={styles.privacy}>{t.privacy}</p>
           </form>
         </div>
-      </div>
+      </main>
     );
   }
 
   // -------------------------------------------------------------
-  // RENDER STEP 2: COMPLETE PROFILE (FIRST-TIME USER ONLY)
+  // STEP 2: QUICK PROFILE (first-time readers only)
   // -------------------------------------------------------------
   const cleanMobileDisplay = normalizeMobile(formData.mobile || mobileInput);
 
   return (
-    <div className={styles.container}>
+    <main className={styles.wrap} id="main" lang={lang}>
       <div className={styles.card}>
+        {Steps}
         <div className={styles.header}>
-          <div className={styles.iconWrap}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <span className={styles.stepBadge}>Step 2 of 2 • Quick Profile</span>
-          <h1 className={styles.title}>Quick Registration</h1>
-          <p className={styles.subtitle}>
-            Please fill in a few details to complete your access. This only takes a minute.
-          </p>
+          <span className={styles.stepBadge}>{t.step}</span>
+          <h1 className={styles.title}>{t.title2}</h1>
+          <p className={styles.subtitle}>{t.sub2}</p>
         </div>
 
-        {/* Confirmed Mobile Badge with Change Option */}
-        <div className={styles.mobileConfirmedBanner}>
-          <div className={styles.mobileConfirmedInfo}>
-            <span className={styles.mobileConfirmedLabel}>Mobile Number</span>
-            <span className={styles.mobileConfirmedValue}>🇮🇳 +91 {cleanMobileDisplay}</span>
+        {/* Confirmed mobile number, with a way back to fix a typo */}
+        <div className={styles.confirmed}>
+          <div>
+            <span className={styles.confirmedLabel}>{t.mobileLabel}</span>
+            <span className={styles.confirmedValue}>+91 {cleanMobileDisplay}</span>
           </div>
-          <button
-            type="button"
-            className={styles.changeMobileBtn}
-            onClick={() => setStep('mobile')}
-            title="Change mobile number"
-          >
-            Change
+          <button type="button" className={styles.changeBtn} onClick={() => setStep('mobile')}>
+            {t.change}
           </button>
         </div>
 
-        <form onSubmit={handleDetailsSubmit} className={styles.form}>
-          {/* Section 1: Personal Details */}
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionBadge}>1</span>
-            <span className={styles.sectionTitle}>Personal Details</span>
-          </div>
+        <form onSubmit={handleDetailsSubmit} className={styles.form} noValidate>
+          <fieldset className={styles.group}>
+            <legend className={styles.legend}><span className={styles.legendNum}>1</span>{t.personal}</legend>
 
-          {/* Name */}
-          <div className={styles.field}>
-            <label htmlFor="name" className={styles.label}>
-              Full Name <span className={styles.required}>*</span>
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="e.g. Dr. Rajesh Patel"
-              className={styles.input}
-              autoComplete="name"
-              autoFocus
-              required
-            />
-          </div>
-
-          {/* Age & Gender row */}
-          <div className={styles.fieldRow}>
             <div className={styles.field}>
-              <label htmlFor="age" className={styles.label}>
-                Age <span className={styles.required}>*</span>
-              </label>
+              <label htmlFor="name" className={styles.label}>{t.fullName}</label>
               <input
-                id="age"
-                name="age"
-                type="number"
-                min="1"
-                max="120"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder="e.g. 35"
-                className={styles.input}
-                required
+                id="name" name="name" type="text" value={formData.name} onChange={handleChange}
+                placeholder={t.namePh} className={styles.input} autoComplete="name" autoFocus required
               />
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>
-                Gender <span className={styles.required}>*</span>
+              <label htmlFor="age" className={styles.label}>{t.age}</label>
+              <input
+                id="age" name="age" type="number" inputMode="numeric" min="1" max="120" value={formData.age}
+                onChange={handleChange} placeholder={t.agePh} className={styles.input} required
+              />
+            </div>
+
+            <fieldset className={styles.field}>
+              <legend className={styles.label}>{t.gender}</legend>
+              <div className={styles.pills} role="radiogroup" aria-label={t.gender}>
+                {GENDERS.map(g => (
+                  <label key={g} className={`${styles.pill} ${formData.gender === g ? styles.pillOn : ''}`}>
+                    <input
+                      type="radio" name="gender" value={g} checked={formData.gender === g}
+                      onChange={handleChange} className={styles.pillInput} required
+                    />
+                    <span>{t.genders[g]}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </fieldset>
+
+          <fieldset className={styles.group}>
+            <legend className={styles.legend}><span className={styles.legendNum}>2</span>{t.location}</legend>
+
+            <div className={styles.field}>
+              <label htmlFor="district" className={styles.label}>{t.district}</label>
+              <input
+                id="district" name="district" type="text" value={formData.district} onChange={handleChange}
+                placeholder={t.districtPh} className={styles.input} required
+              />
+            </div>
+
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label htmlFor="state" className={styles.label}>{t.state}</label>
+                <input id="state" name="state" type="text" value={formData.state} onChange={handleChange} className={styles.input} required />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="country" className={styles.label}>{t.country}</label>
+                <input id="country" name="country" type="text" value={formData.country} onChange={handleChange} className={styles.input} required />
+              </div>
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="email" className={styles.label}>
+                {t.email} <span className={styles.optional}>{t.optional}</span>
               </label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className={styles.select}
-                required
-              >
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+              <input
+                id="email" name="email" type="email" inputMode="email" value={formData.email} onChange={handleChange}
+                placeholder="you@email.com" className={styles.input} autoComplete="email"
+              />
+            </div>
+          </fieldset>
+
+          <fieldset className={styles.group}>
+            <legend className={styles.legend}><span className={styles.legendNum}>3</span>{t.role}</legend>
+
+            <div className={styles.field}>
+              <label htmlFor="userType" className={styles.label}>{t.registeringAs}</label>
+              <select id="userType" name="userType" value={formData.userType} onChange={handleChange} className={styles.input} required>
+                <option value="">{t.selectCategory}</option>
+                {USER_TYPES.map(u => (
+                  <option key={u} value={u}>{t.userTypes[u]}</option>
+                ))}
               </select>
             </div>
-          </div>
 
-          {/* Section 2: Contact & Location */}
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionBadge}>2</span>
-            <span className={styles.sectionTitle}>Location &amp; Contact</span>
-          </div>
-
-          {/* Email (optional) */}
-          <div className={styles.field}>
-            <label htmlFor="email" className={styles.label}>
-              Email <span className={styles.optional}>(optional)</span>
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="your@email.com"
-              className={styles.input}
-              autoComplete="email"
-            />
-          </div>
-
-          {/* Country & State row */}
-          <div className={styles.fieldRow}>
-            <div className={styles.field}>
-              <label htmlFor="country" className={styles.label}>
-                Country <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="country"
-                name="country"
-                type="text"
-                value={formData.country}
-                onChange={handleChange}
-                placeholder="India"
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="state" className={styles.label}>
-                State <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="state"
-                name="state"
-                type="text"
-                value={formData.state}
-                onChange={handleChange}
-                placeholder="Gujarat"
-                className={styles.input}
-                required
-              />
-            </div>
-          </div>
-
-          {/* District */}
-          <div className={styles.field}>
-            <label htmlFor="district" className={styles.label}>
-              District <span className={styles.required}>*</span>
-            </label>
-            <input
-              id="district"
-              name="district"
-              type="text"
-              value={formData.district}
-              onChange={handleChange}
-              placeholder="e.g. Ahmedabad, Surat, Rajkot"
-              className={styles.input}
-              required
-            />
-          </div>
-
-          {/* Section 3: Role / Category */}
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionBadge}>3</span>
-            <span className={styles.sectionTitle}>Your Role</span>
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="userType" className={styles.label}>
-              I am registering as <span className={styles.required}>*</span>
-            </label>
-            <select
-              id="userType"
-              name="userType"
-              value={formData.userType}
-              onChange={handleChange}
-              className={styles.select}
-              required
-            >
-              <option value="">Select your category</option>
-              {USER_TYPES.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
-          {formData.userType === 'Other' && (
-            <div className={styles.field}>
-              <label htmlFor="userTypeOther" className={styles.label}>
-                Please specify your role <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="userTypeOther"
-                name="userTypeOther"
-                type="text"
-                value={formData.userTypeOther}
-                onChange={handleChange}
-                placeholder="Describe your role"
-                className={styles.input}
-                required
-              />
-            </div>
-          )}
-
-          {error && <p className={styles.error}>{error}</p>}
-
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className={styles.spinner} />
-                Completing Registration...
-              </>
-            ) : (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Watch Video
-              </>
+            {formData.userType === 'Other' && (
+              <div className={styles.field}>
+                <label htmlFor="userTypeOther" className={styles.label}>{t.specify}</label>
+                <input
+                  id="userTypeOther" name="userTypeOther" type="text" value={formData.userTypeOther}
+                  onChange={handleChange} placeholder={t.describe} className={styles.input} required
+                />
+              </div>
             )}
-          </button>
+          </fieldset>
 
-          <p className={styles.privacy}>
-            🔒 Your information is kept private and used only for educational analytics.
-          </p>
+          {error && <p className={styles.error} role="alert">{error}</p>}
+
+          {/* Stays in view on phones so the primary action is never scrolled away */}
+          <div className={styles.actions}>
+            <button type="submit" className={styles.submit} disabled={loading}>
+              {loading ? <>{Spinner}{t.submitting}</> : t.submit}
+            </button>
+            <p className={styles.privacy}>{t.privacy2}</p>
+          </div>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

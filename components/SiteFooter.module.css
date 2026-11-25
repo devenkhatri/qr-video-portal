@@ -1,0 +1,43 @@
+.footer {
+  margin-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.18);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.disclaimer {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.9; /* Gujarati/Devanagari need extra leading */
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+}
+
+.admin {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-text-dim);
+  text-decoration: none;
+}
+.admin:hover { color: var(--color-text-muted); text-decoration: underline; }
+
+@media (min-width: 640px) {
+  .inner { padding: var(--space-8) var(--space-6) var(--space-10); }
+}

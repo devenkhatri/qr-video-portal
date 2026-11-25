@@ -1,0 +1,211 @@
+/* Admin shell: top bar everywhere, section tabs on top (desktop) or bottom (mobile) */
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(900px 380px at 85% -10%, rgba(79, 156, 249, 0.1), transparent 70%),
+    radial-gradient(700px 320px at 0% 0%, rgba(155, 89, 182, 0.07), transparent 70%),
+    var(--color-bg);
+}
+
+/* Top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 15, 30, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+  padding-top: env(safe-area-inset-top);
+}
+
+.topInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 60px;
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79, 156, 249, 0.35);
+}
+
+.brandText { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.brandName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brandRole {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.actions { display: flex; align-items: center; gap: var(--space-1); flex: none; }
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.action:hover:not(:disabled) { background: rgba(255, 255, 255, 0.07); color: var(--color-text); }
+.action:disabled { opacity: 0.6; cursor: progress; }
+
+.signOutText { display: none; }
+
+/* On narrow phones the brand name needs the room; the site link is reachable from the guidebook itself */
+@media (max-width: 479px) {
+  .viewSite { display: none; }
+}
+
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Desktop section tabs (hidden on mobile; the bottom bar takes over) */
+.tabs { display: none; }
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) calc(88px + env(safe-area-inset-bottom));
+}
+
+/* Mobile bottom navigation */
+.bottomNav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(14, 20, 36, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--color-border);
+}
+
+.bottomItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 60px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-dim);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s ease;
+}
+
+.bottomItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 2px;
+  border-radius: 0 0 4px 4px;
+  background: var(--color-primary);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.bottomActive { color: var(--color-primary); }
+.bottomActive::before { transform: scaleX(1); }
+
+/* Tablet and up: tabs move to the top bar */
+@media (min-width: 768px) {
+  .topInner { padding: 0 var(--space-6); gap: var(--space-6); }
+  .brand { flex: none; }
+
+  .tabs {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .tab:hover { color: var(--color-text); background: rgba(255, 255, 255, 0.05); }
+  .tabActive,
+  .tabActive:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    box-shadow: inset 0 0 0 1px rgba(79, 156, 249, 0.3);
+  }
+
+  .signOutText { display: inline; }
+  .action { padding: 0 var(--space-3); }
+
+  .content { padding: var(--space-8) var(--space-6) var(--space-12); }
+  .bottomNav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin { animation: none; }
+  .bottomItem::before, .action, .tab { transition: none; }
+}

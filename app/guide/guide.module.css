@@ -1,0 +1,32 @@
+/* Chapter list page */
+.main {
+  min-height: calc(100dvh - 60px);
+  background:
+    radial-gradient(900px 360px at 50% -10%, rgba(79, 156, 249, 0.16), transparent 70%),
+    var(--color-bg);
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) 0;
+}
+
+.heading { margin-bottom: var(--space-5); }
+
+.title {
+  font-size: clamp(1.7rem, 6vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.5; /* room for Gujarati/Devanagari matras */
+}
+
+.hint { margin-top: 2px; color: var(--color-text-muted); font-size: 1rem; line-height: 1.8; }
+
+.continue { margin-bottom: var(--space-5); max-width: 560px; }
+.continue:empty { display: none; }
+
+@media (min-width: 640px) {
+  .wrap { padding-top: var(--space-10); }
+  .heading { margin-bottom: var(--space-8); }
+}
