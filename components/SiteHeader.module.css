@@ -1,172 +1,154 @@
-/* SiteHeader.module.css */
-
-.headerWrapper {
-  width: 100%;
-  background: rgba(17, 24, 39, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
+/* Reader header: compact on phones, language switch always within thumb reach of the top edge */
+.header {
   position: sticky;
   top: 0;
+  z-index: 50;
+  background: rgba(10, 15, 30, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Keyboard users can jump past the header */
+.skip {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
   z-index: 100;
-}
-
-.inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  text-decoration: none;
-  color: inherit;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.brand:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-
-.brandIcon {
-  width: 40px;
-  height: 40px;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(79, 156, 249, 0.2), rgba(155, 89, 182, 0.2));
-  border: 1px solid rgba(79, 156, 249, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
-  flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(79, 156, 249, 0.15);
-}
-
-.brandText {
-  display: flex;
-  flex-direction: column;
-}
-
-.brandTitle {
-  font-size: 1.12rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-text);
-  line-height: 1.2;
-}
-
-.brandSub {
-  font-size: 0.76rem;
-  color: var(--color-text-muted);
-}
-
-.navRight {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.homeLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  transition: all 0.2s ease;
-  background: var(--color-surface-2);
-}
-
-.homeLink:hover {
-  color: var(--color-text);
-  border-color: var(--color-primary);
-  background: var(--color-primary-subtle);
-}
-
-.guidebookBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.guidebookBtn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-subtle);
-}
-
-.adminLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-decoration: none;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.adminLink:hover {
-  color: var(--color-text);
-  border-color: rgba(79, 156, 249, 0.4);
-  background: rgba(79, 156, 249, 0.1);
-}
-
-.adminDashboardLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-primary);
-  font-size: 0.8rem;
+  background: var(--color-primary);
+  color: #fff;
   font-weight: 600;
   text-decoration: none;
-  padding: 6px 14px;
+}
+.skip:focus { top: var(--space-3); }
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  min-height: 60px;
+  padding: 0 var(--space-3) 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  margin-left: calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.back:hover { background: rgba(255, 255, 255, 0.07); color: var(--color-text); }
+.backIcon { transform: rotate(180deg); }
+.backLabel { display: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.6; }
+
+.brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79, 156, 249, 0.35);
+}
+
+.brandName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* With a back button there is less room: let the logo mark carry the brand on narrow phones */
+.brandWithBack .brandName { display: none; }
+
+.right { flex: none; display: flex; align-items: center; gap: var(--space-2); }
+
+.adminPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--space-3);
   border-radius: var(--radius-full);
-  border: 1px solid rgba(79, 156, 249, 0.3);
-  background: rgba(79, 156, 249, 0.12);
-  transition: all 0.2s ease;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.adminDashboardLink:hover {
-  background: rgba(79, 156, 249, 0.2);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 12px var(--color-primary-glow);
+/* Language switch */
+.langs {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
 }
 
-@media (max-width: 640px) {
-  .inner {
-    padding: var(--space-3) var(--space-4);
-  }
-  .brandTitle {
-    font-size: 1rem;
-  }
-  .brandSub {
-    display: none;
-  }
+.lang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 38px;
+  padding: 0 var(--space-2);
+  border-radius: calc(var(--radius-md) - 3px);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lang:hover { color: var(--color-text); }
+.langActive {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px rgba(79, 156, 249, 0.35);
+}
+
+@media (min-width: 640px) {
+  .inner { padding: 0 var(--space-6); gap: var(--space-4); min-height: 64px; }
+  .backLabel { display: inline; }
+  .brandWithBack .brandName { display: inline; }
+  .brand { flex: 1; }
+}
+
+@media (max-width: 380px) {
+  .lang { min-width: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang { transition: none; }
 }

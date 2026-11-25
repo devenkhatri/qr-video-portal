@@ -3,7 +3,7 @@ import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { getSheetsClient, SHEET_ID, RANGES } from '@/lib/sheets';
 import { cookies } from 'next/headers';
-import { getAllVideos } from '@/lib/videos';
+import { getChapters, getPointChapterMap } from '@/lib/guide';
 import { normalizeMobile } from '@/lib/mobile';
 
 export const dynamic = 'force-dynamic';
@@ -17,16 +17,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const allVideos = await getAllVideos(true);
-
-    // Build reverse map to look up video title from youtubeId or slug
+    // Analytics rows store the chapter id in the video_id column; map it to a readable title
     const idToTitle: Record<string, string> = {};
-    for (const [key, v] of Object.entries(allVideos)) {
-      idToTitle[key] = v.title;
-      if (v.youtubeId) {
-        idToTitle[v.youtubeId] = v.title;
-      }
+    for (const c of await getChapters('gu')) {
+      idToTitle[c.id] = c.title;
     }
+    // Point pages log the point id; count them under their chapter
+    const pointToChapter = await getPointChapterMap();
 
     // Fallback demo data if Google Sheets is not yet configured
     if (!SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
@@ -44,10 +41,10 @@ export async function GET() {
           'ASHA': 2,
           'Nurse - Coordinator': 2,
         },
-        viewsPerVideo: {
-          'Introduction to Cancer Awareness': 25,
-          'Understanding Chemotherapy': 12,
-          'Palliative Care Basics': 5,
+        viewsPerChapter: {
+          'નિદાન': 25,
+          'કીમોથેરાપી': 12,
+          'ઉપશામક સંભાળ': 5,
         },
         recentRegistrations: [
           { userId: 'demo-1', name: 'Dr. A. Sharma', gender: 'Male', state: 'Gujarat', district: 'Ahmedabad', userType: 'Oncologist', registeredAt: new Date().toISOString() },
@@ -117,13 +114,13 @@ export async function GET() {
 
     // --- Aggregate analytics ---
     const totalViews = analytics.length;
-    const viewsPerVideo: Record<string, number> = {};
+    const viewsPerChapter: Record<string, number> = {};
 
     for (const row of analytics) {
       // [eventId, videoId, userId, watched_at]
       const rawVid = row[1] || 'unknown';
-      const label = idToTitle[rawVid] || rawVid;
-      viewsPerVideo[label] = (viewsPerVideo[label] || 0) + 1;
+      const label = idToTitle[pointToChapter[rawVid] ?? rawVid] || rawVid;
+      viewsPerChapter[label] = (viewsPerChapter[label] || 0) + 1;
     }
 
     // Recent registrations (last 10)
@@ -153,7 +150,7 @@ export async function GET() {
         stateBreakdown,
         districtBreakdown,
         userTypeBreakdown,
-        viewsPerVideo,
+        viewsPerChapter,
         recentRegistrations,
         isDemoData: false,
       },

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_Gujarati, Noto_Sans_Devanagari } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/site';
 import './globals.css';
 
 const inter = Inter({
@@ -9,35 +10,41 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+// Indic scripts: Inter has no Gujarati/Devanagari glyphs, so these are used as per-glyph fallbacks
+const notoGujarati = Noto_Sans_Gujarati({
+  subsets: ['gujarati'],
+  display: 'swap',
+  variable: '--font-noto-gujarati',
+});
+
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ['devanagari'],
+  display: 'swap',
+  variable: '--font-noto-devanagari',
+});
+
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://qr-video-portal-dr.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Medical Video Portal',
-    template: '%s | Medical Video Portal',
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'Educational clinical video series with instant QR code access.',
-  icons: {
-    icon: [
-      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
-      { url: '/favicon.ico' },
-    ],
-    apple: [
-      { url: '/apple-icon.png', sizes: '512x512', type: 'image/png' },
-    ],
-  },
+  description: SITE_DESCRIPTION,
+  // Icons come from the app/ file conventions (favicon.ico, icon.png, apple-icon.png), so Next.js
+  // generates the <link> tags, with the right sizes, from the files themselves.
   openGraph: {
-    title: 'Medical Video Portal',
-    description: 'Educational clinical video series with instant QR code access.',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     url: siteUrl,
-    siteName: 'Medical Video Portal',
+    siteName: SITE_NAME,
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 675,
-        alt: 'Medical Video Portal - Educational Clinical Video Series',
+        alt: SITE_NAME,
       },
     ],
     locale: 'en_US',
@@ -45,8 +52,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Medical Video Portal',
-    description: 'Educational clinical video series with instant QR code access.',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     images: ['/og-image.jpg'],
   },
 };
@@ -64,7 +71,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body>
+      <body
+        className={`${notoGujarati.variable} ${notoDevanagari.variable}`}
+        style={{
+          fontFamily:
+            "var(--font-inter), var(--font-noto-gujarati), var(--font-noto-devanagari), system-ui, sans-serif",
+        }}
+      >
         {children}
         <Analytics />
       </body>

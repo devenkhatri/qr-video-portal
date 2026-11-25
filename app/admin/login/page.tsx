@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { SITE_NAME } from '@/lib/site';
+import { IconQr } from '@/components/admin/icons';
 import styles from './login.module.css';
 
 export default function AdminLoginPage() {
@@ -39,14 +41,12 @@ export default function AdminLoginPage() {
   return (
     <main className={styles.main}>
       <div className={styles.card}>
-        <div className={styles.logoWrap}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <h1 className={styles.title}>Admin Access</h1>
-        <p className={styles.subtitle}>Enter your password to view the analytics dashboard.</p>
+        <span className={styles.mark} aria-hidden="true">
+          <IconQr size={26} />
+        </span>
+        <p className={styles.eyebrow}>{SITE_NAME}</p>
+        <h1 className={styles.title}>Admin sign in</h1>
+        <p className={styles.subtitle}>Manage chapters and points, print QR codes and see how the guidebook is being read.</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
@@ -59,19 +59,22 @@ export default function AdminLoginPage() {
               placeholder="Enter admin password"
               className={styles.input}
               autoComplete="current-password"
+              autoFocus
               required
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'login-error' : undefined}
             />
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error && <p id="login-error" className={styles.error} role="alert">{error}</p>}
 
           <button type="submit" className={styles.btn} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In →'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
         <Link href="/" className={styles.backLink}>
-          ← Return to Portal Homepage
+          ← Back to the guidebook
         </Link>
       </div>
     </main>

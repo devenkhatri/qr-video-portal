@@ -1,0 +1,60 @@
+{
+  "chapters": [
+    {
+      "chapter_id": "diagnosis",
+      "order": 1,
+      "title_gu": "નિદાન",
+      "title_en": "Diagnosis",
+      "title_hi": "निदान",
+      "icon": "🔬",
+      "description_gu": "કેન્સરની તપાસ અને નિદાન કેવી રીતે થાય છે તે સમજો.",
+      "description_en": "Understand how cancer is tested for and diagnosed."
+    },
+    {
+      "chapter_id": "surgery",
+      "order": 2,
+      "title_gu": "શસ્ત્રક્રિયા",
+      "title_en": "Surgery",
+      "title_hi": "सर्जरी",
+      "icon": "🏥",
+      "description_gu": "શસ્ત્રક્રિયા પહેલાં, દરમિયાન અને પછી શું અપેક્ષા રાખવી.",
+      "description_en": "What to expect before, during and after surgery."
+    },
+    {
+      "chapter_id": "radiotherapy",
+      "order": 3,
+      "title_gu": "રેડિયોથેરાપી",
+      "title_en": "Radiotherapy",
+      "title_hi": "रेडियोथेरेपी",
+      "icon": "⚡",
+      "description_gu": "રેડિયોથેરાપી કેવી રીતે કામ કરે છે અને તેની તૈયારી.",
+      "description_en": "How radiotherapy works and how to prepare for it."
+    }
+  ],
+  "points": [
+    {
+      "point_id": "diagnosis-1",
+      "chapter_id": "diagnosis",
+      "order": 1,
+      "heading_gu": "કેન્સરનું નિદાન કેવી રીતે થાય છે?",
+      "heading_en": "How is cancer diagnosed?",
+      "text_gu": "નિદાન માટે તપાસ, સ્કેન અને બાયોપ્સીની જરૂર પડી શકે છે.",
+      "text_en": "Diagnosis may need examination, scans and a biopsy.",
+      "image_urls": "",
+      "video_url_gu": "dQw4w9WgXcQ",
+      "video_url_en": ""
+    },
+    {
+      "point_id": "diagnosis-2",
+      "chapter_id": "diagnosis",
+      "order": 2,
+      "heading_gu": "બાયોપ્સી શું છે?",
+      "heading_en": "What is a biopsy?",
+      "text_gu": "બાયોપ્સીમાં પેશીનો નાનો નમૂનો લઈ તપાસવામાં આવે છે.",
+      "text_en": "A biopsy takes a small tissue sample for testing.",
+      "image_urls": "https://placehold.co/600x400?text=Image+1, https://placehold.co/600x400?text=Image+2",
+      "video_url_gu": "",
+      "video_url_en": ""
+    }
+  ]
+}

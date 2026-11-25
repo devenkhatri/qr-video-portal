@@ -1,0 +1,171 @@
+/* QR dialog, shared by the admin and the public chapter/point pages.
+   Bottom sheet on phones, centered dialog on larger screens. */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(3, 6, 14, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease both;
+}
+
+.modal {
+  width: 100%;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: 0 -16px 60px rgba(0, 0, 0, 0.5);
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: slideUp 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Grab handle hints that the sheet can be dismissed */
+.modal::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 10px auto 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+}
+
+.modalTitle { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+.modalSub { margin-top: 1px; color: var(--color-text-muted); font-size: 0.85rem; line-height: 1.6; overflow-wrap: anywhere; }
+
+.closeBtn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.closeBtn:hover { background: rgba(255, 255, 255, 0.07); color: var(--color-text); }
+
+.qrWrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) var(--space-5) var(--space-4);
+}
+
+.qrImage {
+  width: min(100%, 300px);
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+}
+
+.qrLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 300px);
+  aspect-ratio: 330 / 420;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.urlBox {
+  margin: 0 var(--space-5) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+.urlText {
+  display: block;
+  color: var(--color-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  word-break: break-all;
+  user-select: all;
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-3);
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.btnDownload,
+.btnCopyUrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btnDownload {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(79, 156, 249, 0.28);
+}
+.btnDownload:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(79, 156, 249, 0.4); }
+.btnDownload:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btnCopyUrl {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-border-hover);
+  color: var(--color-text);
+}
+.btnCopyUrl:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+.btnCopied {
+  background: rgba(46, 204, 113, 0.14) !important;
+  color: #58d68d !important;
+  border-color: rgba(46, 204, 113, 0.4) !important;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(32px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (min-width: 640px) {
+  .modalOverlay { align-items: center; padding: var(--space-6); }
+  .modal {
+    max-width: 440px;
+    max-height: calc(100dvh - 3rem);
+    border: 1px solid var(--color-border-hover);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    padding-bottom: 0;
+  }
+  .modal::before { display: none; }
+  .modalHeader { padding-top: var(--space-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay, .modal { animation: none; }
+}

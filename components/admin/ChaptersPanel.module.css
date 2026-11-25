@@ -1,0 +1,142 @@
+/* Chapters & QR panel: stacked cards on phones, a single scannable row per chapter on desktop */
+.pageHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.pageTitle {
+  font-size: clamp(1.4rem, 5vw, 1.9rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.pageSub { margin-top: 2px; color: var(--color-text-muted); font-size: 0.9rem; }
+.pageHead :global(select) { max-width: 100%; }
+.pageHead > [role='group'] { align-self: flex-start; }
+
+.demo { margin-bottom: var(--space-4); }
+
+/* Whole-guidebook QR */
+.hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  border-color: rgba(79, 156, 249, 0.25);
+  background:
+    radial-gradient(420px 160px at 0% 0%, rgba(79, 156, 249, 0.14), transparent 70%),
+    var(--color-surface);
+}
+.heroIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+.heroText { min-width: 0; }
+.hero > button { grid-column: 1 / -1; }
+
+/* Chapter list */
+.list { list-style: none; display: grid; gap: var(--space-3); }
+
+.chapter { padding: var(--space-4); }
+
+.row { display: grid; gap: var(--space-3); }
+
+.rowTitle { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+
+.num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.name { font-weight: 650; line-height: 1.6; min-width: 0; overflow-wrap: anywhere; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+}
+.stats > div {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+}
+.stats dt { color: var(--color-text-dim); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.stats dd { margin: 0; font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.rowActions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.rowActions > button:last-child:not([aria-label]) { margin-left: auto; }
+
+.chev { transition: transform 0.2s ease; }
+.chevOpen { transform: rotate(90deg); transition: transform 0.2s ease; }
+
+/* Points of a chapter */
+.points {
+  list-style: none;
+  margin-top: var(--space-4);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  display: grid;
+}
+
+.point {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.point:first-child { border-top: 0; }
+
+.pointNum { color: var(--color-text-dim); font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pointName { min-width: 0; font-size: 0.9rem; line-height: 1.6; overflow-wrap: anywhere; }
+.pointActions { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); }
+
+/* Skeletons */
+.skelHead { height: 72px; margin-bottom: var(--space-4); }
+.skelRow { height: 120px; margin-bottom: var(--space-3); }
+
+@media (min-width: 640px) {
+  .pageHead { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+  .hero { grid-template-columns: auto 1fr auto; }
+  .hero > button { grid-column: auto; }
+  .chapter { padding: var(--space-4) var(--space-5); }
+}
+
+@media (min-width: 900px) {
+  .row {
+    /* fixed last column keeps the stat boxes aligned across rows, whether or not a row has a points toggle */
+    grid-template-columns: minmax(220px, 1.2fr) minmax(260px, 1fr) 250px;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .stats { max-width: 340px; }
+  .rowActions { justify-content: flex-end; flex-wrap: nowrap; }
+  .rowActions > button:last-child:not([aria-label]) { margin-left: 0; }
+
+  .point { grid-template-columns: 3rem 1fr auto auto; }
+  .pointActions { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chev, .chevOpen { transition: none; }
+}

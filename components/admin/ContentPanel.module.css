@@ -1,0 +1,159 @@
+/* Content panel: touch-first cards. Tap a chapter to expand its points. */
+.pageHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.pageTitle { font-size: clamp(1.4rem, 5vw, 1.9rem); font-weight: 750; letter-spacing: -0.02em; line-height: 1.25; }
+.pageSub { margin-top: 2px; color: var(--color-text-muted); font-size: 0.9rem; }
+
+.headActions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.addDesktop { display: none; }
+.gap { margin-bottom: var(--space-4); }
+
+.list { list-style: none; display: grid; gap: var(--space-3); }
+
+.chapter { padding: 0; overflow: hidden; }
+.dim { opacity: 0.62; }
+
+.chapterHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.chapterHead:hover { background: rgba(255, 255, 255, 0.025); }
+
+.icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.headText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.title { font-weight: 650; line-height: 1.6; overflow-wrap: anywhere; }
+.meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); color: var(--color-text-muted); font-size: 0.78rem; }
+
+.chev { flex: none; color: var(--color-text-dim); transition: transform 0.2s ease; }
+.chevOpen { flex: none; color: var(--color-primary); transform: rotate(90deg); transition: transform 0.2s ease; }
+
+/* Toolbar (shared by chapters and points) */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.12);
+}
+.order { display: flex; gap: var(--space-1); margin-right: auto; }
+.hideOnPhone { display: none; }
+
+/* Points */
+.points {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.16);
+}
+.noPoints { padding: var(--space-3); color: var(--color-text-muted); font-size: 0.85rem; }
+
+.point {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.point .toolbar { padding: var(--space-2) var(--space-3); }
+
+.pointMain { display: flex; gap: var(--space-3); padding: var(--space-3); }
+.pointNum { flex: none; min-width: 2.2rem; color: var(--color-text-dim); font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; padding-top: 0.2rem; }
+.pointText { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.pointTitle { font-weight: 600; font-size: 0.95rem; line-height: 1.6; overflow-wrap: anywhere; }
+.chips { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+.langs { display: inline-flex; gap: 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; }
+.langOn { color: #58d68d; }
+.langOff { color: var(--color-text-dim); opacity: 0.55; }
+
+.addPoint { width: 100%; border-style: dashed; }
+
+.emptyBtn { margin-top: var(--space-4); }
+
+/* Floating add button: above the mobile bottom nav */
+.fab {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(43, 126, 232, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fab:active { transform: scale(0.94); }
+
+/* Confirmation toast */
+.toast {
+  position: fixed;
+  left: var(--space-4);
+  right: calc(var(--space-4) + 68px);
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 56;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  animation: toastIn 0.25s ease both;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.skelHead { height: 72px; margin-bottom: var(--space-4); }
+.skelRow { height: 132px; margin-bottom: var(--space-3); }
+
+@media (min-width: 640px) {
+  .pageHead { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+  .hideOnPhone { display: inline; }
+}
+
+@media (min-width: 768px) {
+  .addDesktop { display: inline-flex; }
+  .fab { display: none; }
+  .toast { left: auto; right: var(--space-6); bottom: var(--space-6); max-width: 420px; }
+
+  /* Desktop: toolbar sits beside the title instead of underneath */
+  .chapter { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .chapter > .toolbar { border-top: 0; background: transparent; padding: var(--space-3) var(--space-4) var(--space-3) 0; }
+  .chapter > .points { grid-column: 1 / -1; }
+
+  .point { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .point .toolbar { border-top: 0; background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chev, .chevOpen, .fab { transition: none; }
+  .toast { animation: none; }
+}

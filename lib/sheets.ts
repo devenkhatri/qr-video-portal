@@ -21,4 +21,6 @@ export const RANGES = {
   registrations: 'registrations!A:K',
   analytics: 'analytics!A:E',
   videos: 'videos!A:G',
+  chapters: 'chapters!A:J',
+  points: 'points!A:N',
 } as const;
