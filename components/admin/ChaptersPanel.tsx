@@ -229,7 +229,7 @@ export default function ChaptersPanel({ baseUrl, refreshKey, onFetchingChange }:
         </ol>
       )}
 
-      {qr && <QrModal target={qr} onClose={() => setQr(null)} />}
+      {qr && <QrModal target={qr} onClose={() => setQr(null)} allowSource />}
     </div>
   );
 }

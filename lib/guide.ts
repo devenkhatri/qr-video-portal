@@ -242,3 +242,24 @@ export async function getPointChapterMap(): Promise<Record<string, string>> {
   const { points } = await getGuideData();
   return Object.fromEntries(points.map(p => [p.id, p.chapterId]));
 }
+
+/** Admin-facing summary of the guide: English-first titles and which point belongs to which chapter. */
+export interface GuideIndex {
+  chapters: { id: string; order: number; title: string; pointIds: string[] }[];
+  points: Record<string, { chapterId: string; heading: string; order: number }>;
+}
+
+export async function getGuideIndex(): Promise<GuideIndex> {
+  const { chapters, points } = await getGuideData();
+  return {
+    chapters: chapters.map(c => ({
+      id: c.id,
+      order: c.order,
+      title: pick(c.titles, 'en') || c.id,
+      pointIds: points.filter(p => p.chapterId === c.id).map(p => p.id),
+    })),
+    points: Object.fromEntries(
+      points.map(p => [p.id, { chapterId: p.chapterId, heading: pick(p.headings, 'en'), order: p.order }])
+    ),
+  };
+}

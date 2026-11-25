@@ -6,8 +6,9 @@ import AdminShell, { type AdminTab } from './AdminShell';
 import AnalyticsPanel from './AnalyticsPanel';
 import ChaptersPanel from './ChaptersPanel';
 import ContentPanel from './ContentPanel';
+import UsersPanel from './UsersPanel';
 
-const TABS: AdminTab[] = ['analytics', 'chapters', 'content'];
+const TABS: AdminTab[] = ['analytics', 'users', 'chapters', 'content'];
 
 /**
  * Admin entry point. The active section lives in the URL (?tab=content), so a refresh or a shared
@@ -52,6 +53,7 @@ export default function AdminDashboard() {
       onLogout={onLogout}
     >
       {active === 'analytics' && <AnalyticsPanel refreshKey={refreshKey} onFetchingChange={setFetching} />}
+      {active === 'users' && <UsersPanel refreshKey={refreshKey} onFetchingChange={setFetching} />}
       {active === 'chapters' && baseUrl && (
         <ChaptersPanel baseUrl={baseUrl} refreshKey={refreshKey} onFetchingChange={setFetching} />
       )}

@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { IconBook, IconMap, IconPin, IconUsers } from './icons';
+import InsightsPanel from './InsightsPanel';
 import ui from '../ui.module.css';
 import styles from './AnalyticsPanel.module.css';
 
@@ -300,6 +301,8 @@ export default function AnalyticsPanel({ refreshKey, onFetchingChange }: Analyti
           </>
         )}
       </section>
+
+      <InsightsPanel refreshKey={refreshKey} />
     </div>
   );
 }

@@ -3,13 +3,14 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { SITE_NAME } from '@/lib/site';
-import { IconChart, IconEdit, IconExternal, IconLogout, IconQr, IconRefresh } from './icons';
+import { IconChart, IconEdit, IconExternal, IconLogout, IconQr, IconRefresh, IconUsers } from './icons';
 import styles from './AdminShell.module.css';
 
-export type AdminTab = 'analytics' | 'chapters' | 'content';
+export type AdminTab = 'analytics' | 'users' | 'chapters' | 'content';
 
 const TABS: { id: AdminTab; label: string; Icon: typeof IconChart }[] = [
   { id: 'analytics', label: 'Analytics', Icon: IconChart },
+  { id: 'users', label: 'Users', Icon: IconUsers },
   { id: 'chapters', label: 'Chapters', Icon: IconQr },
   { id: 'content', label: 'Content', Icon: IconEdit },
 ];

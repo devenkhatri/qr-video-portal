@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import SourceCapture from '@/components/SourceCapture';
 import { Inter, Noto_Sans_Gujarati, Noto_Sans_Devanagari } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/site';
@@ -78,6 +79,7 @@ export default function RootLayout({
             "var(--font-inter), var(--font-noto-gujarati), var(--font-noto-devanagari), system-ui, sans-serif",
         }}
       >
+        <SourceCapture />
         {children}
         <Analytics />
       </body>
