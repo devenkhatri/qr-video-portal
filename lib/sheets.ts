@@ -20,7 +20,6 @@ export const SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 export const RANGES = {
   registrations: 'registrations!A:L',
   analytics: 'analytics!A:E',
-  videos: 'videos!A:G',
   chapters: 'chapters!A:J',
   points: 'points!A:N',
 } as const;
