@@ -56,5 +56,35 @@
       "video_url_gu": "",
       "video_url_en": ""
     }
+  ],
+  "questions": [
+    {
+      "question_id": "diagnosis-1-q1",
+      "point_id": "diagnosis-1",
+      "lang": "gu",
+      "order": 1,
+      "question": "કેન્સરના નિદાનનું પ્રથમ પગલું કયું છે?",
+      "opt_a": "સીધી સર્જરી કરાવવી",
+      "opt_b": "કેન્સર નિષ્ણાત ડૉક્ટરને મળવું",
+      "opt_c": "ઘરેલુ ઉપચાર કરવા",
+      "opt_d": "રાહ જોવી",
+      "correct": "b",
+      "explanation": "કેન્સર નિષ્ણાતને મળવું એ નિદાનનું પ્રથમ પગલું છે.",
+      "active": "TRUE"
+    },
+    {
+      "question_id": "diagnosis-1-q2",
+      "point_id": "diagnosis-1",
+      "lang": "gu",
+      "order": 2,
+      "question": "બાયોપ્સી શા માટે કરાય છે?",
+      "opt_a": "કેન્સર છે અને કયા પ્રકારનું છે તે પાકું કરવા",
+      "opt_b": "વજન માપવા",
+      "opt_c": "આંખ તપાસવા",
+      "opt_d": "દવા આપવા",
+      "correct": "a",
+      "explanation": "બાયોપ્સી વગર કોઈ સારવાર આપી શકાય નહિ.",
+      "active": "TRUE"
+    }
   ]
 }

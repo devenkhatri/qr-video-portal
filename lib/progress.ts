@@ -22,9 +22,17 @@ export interface Progress {
   /** point id -> time it was opened */
   read: Record<string, number>;
   last?: LastVisited;
+  /** point id -> best quiz result on this device */
+  quiz: Record<string, QuizResult>;
 }
 
-const EMPTY: Progress = { read: {} };
+export interface QuizResult {
+  correct: number;
+  total: number;
+  at: number;
+}
+
+const EMPTY: Progress = { read: {}, quiz: {} };
 
 export function loadProgress(): Progress {
   try {
@@ -34,6 +42,7 @@ export function loadProgress(): Progress {
     return {
       read: parsed && typeof parsed.read === 'object' && parsed.read ? parsed.read : {},
       last: parsed?.last,
+      quiz: parsed && typeof parsed.quiz === 'object' && parsed.quiz ? parsed.quiz : {},
     };
   } catch {
     return EMPTY;
@@ -53,6 +62,14 @@ export function markPointRead(pointId: string) {
   const p = loadProgress();
   if (p.read[pointId]) return;
   save({ ...p, read: { ...p.read, [pointId]: Date.now() } });
+}
+
+/** Keeps the best score per point, so a retry can only improve the stored result. */
+export function saveQuizResult(pointId: string, correct: number, total: number) {
+  const p = loadProgress();
+  const prev = p.quiz[pointId];
+  if (prev && prev.total === total && prev.correct >= correct) return;
+  save({ ...p, quiz: { ...p.quiz, [pointId]: { correct, total, at: Date.now() } } });
 }
 
 export function setLastVisited(last: Omit<LastVisited, 'at'>) {

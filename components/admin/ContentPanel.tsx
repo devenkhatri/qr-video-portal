@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { LANGUAGES, DEFAULT_LANG, type Lang } from '@/lib/languages';
 import type { AdminChapter, AdminContent, AdminPoint, LangStrings } from '@/types/guideAdmin';
 import ContentEditor, { type EditorTarget } from './ContentEditor';
+import QuizEditor from './QuizEditor';
 import {
   IconChevron, IconDown, IconEdit, IconExternal, IconEye, IconEyeOff, IconImage, IconPlay, IconPlus, IconUp,
 } from './icons';
@@ -24,10 +25,10 @@ interface ContentPanelProps {
 
 /** Toolbar shared by chapter and point rows. Labels collapse to icons on phones. */
 function Toolbar({
-  isFirst, isLast, busy, active, openHref, onUp, onDown, onEdit, onToggle, noun,
+  isFirst, isLast, busy, active, openHref, onUp, onDown, onEdit, onQuiz, onToggle, noun,
 }: {
   isFirst: boolean; isLast: boolean; busy: boolean; active: boolean; openHref?: string;
-  onUp: () => void; onDown: () => void; onEdit: () => void; onToggle: () => void; noun: string;
+  onUp: () => void; onDown: () => void; onEdit: () => void; onQuiz?: () => void; onToggle: () => void; noun: string;
 }) {
   const icon = `${ui.btn} ${ui.btnGhost} ${ui.btnSm} ${ui.btnIcon}`;
   const text = `${ui.btn} ${ui.btnSecondary} ${ui.btnSm}`;
@@ -38,6 +39,7 @@ function Toolbar({
         <button type="button" className={icon} disabled={busy || isLast} onClick={onDown} aria-label={`Move ${noun} down`} title="Move down"><IconDown size={18} /></button>
       </div>
       <button type="button" className={text} onClick={onEdit}><IconEdit size={16} /> Edit</button>
+      {onQuiz && <button type="button" className={text} onClick={onQuiz}>Quiz</button>}
       <button type="button" className={text} disabled={busy} onClick={onToggle} aria-label={`${active ? 'Hide' : 'Show'} ${noun}`}>
         {active ? <IconEyeOff size={16} /> : <IconEye size={16} />}
         <span className={styles.hideOnPhone}>{active ? 'Hide' : 'Show'}</span>
@@ -59,6 +61,7 @@ export default function ContentPanel({ refreshKey, onFetchingChange }: ContentPa
   const [viewLang, setViewLang] = useState<Lang>(DEFAULT_LANG);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [editor, setEditor] = useState<EditorTarget | null>(null);
+  const [quizFor, setQuizFor] = useState<{ point: AdminPoint; chapter: AdminChapter } | null>(null);
   const [toast, setToast] = useState('');
 
   const load = useCallback(async () => {
@@ -239,6 +242,7 @@ export default function ContentPanel({ refreshKey, onFetchingChange }: ContentPa
                                   </span>
                                 ))}
                               </span>
+                              {(content?.quizCounts?.[p.id] ?? 0) > 0 && <span className={ui.pill}>Quiz · {content?.quizCounts?.[p.id]}</span>}
                               {!p.active && <span className={`${ui.pill} ${ui.pillWarn}`}>Hidden</span>}
                             </span>
                           </div>
@@ -253,6 +257,7 @@ export default function ContentPanel({ refreshKey, onFetchingChange }: ContentPa
                           onUp={() => quickAction('point', p.id, { direction: 'up' })}
                           onDown={() => quickAction('point', p.id, { direction: 'down' })}
                           onEdit={() => setEditor({ kind: 'point', point: p, chapterId: c.id })}
+                          onQuiz={() => setQuizFor({ point: p, chapter: c })}
                           onToggle={() => quickAction('point', p.id, { active: !p.active })}
                         />
                       </div>
@@ -276,6 +281,17 @@ export default function ContentPanel({ refreshKey, onFetchingChange }: ContentPa
       )}
 
       {toast && <div className={`${ui.notice} ${ui.noticeSuccess} ${styles.toast}`} role="status">{toast}</div>}
+
+      {quizFor && (
+        <QuizEditor
+          key={quizFor.point.id}
+          point={quizFor.point}
+          chapter={quizFor.chapter}
+          readOnly={readOnly}
+          onClose={() => setQuizFor(null)}
+          onSaved={() => { setQuizFor(null); onSaved(); }}
+        />
+      )}
 
       {editor && (
         <ContentEditor

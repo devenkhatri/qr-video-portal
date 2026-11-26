@@ -331,10 +331,67 @@ interface InsightsPanelProps {
   refreshKey: number;
 }
 
+interface QuizStats {
+  attempts: number;
+  readers: number;
+  accuracy: number;
+  hardest: { id: string; question: string; point: string; attempts: number; accuracy: number }[];
+  chapters: { id: string; title: string; attempts: number; accuracy: number }[];
+}
+
+/* ---- Quiz results ---- */
+function QuizResults({ stats }: { stats: QuizStats | null }) {
+  if (!stats) return <Empty text="Quiz results could not be loaded." />;
+  if (stats.attempts === 0) return <Empty text="No quiz answers yet. Results appear once readers start answering." />;
+  return (
+    <>
+      <div className={styles.metrics}>
+        <div className={`${ui.card} ${styles.metric}`} style={{ ['--tone' as string]: '#4F9CF9' }}>
+          <span className={base.kpiLabel}>Answers</span>
+          <span className={styles.metricValue}>{stats.attempts}</span>
+          <span className={styles.metricHint}>First answer to each question</span>
+        </div>
+        <div className={`${ui.card} ${styles.metric}`} style={{ ['--tone' as string]: '#9B59B6' }}>
+          <span className={base.kpiLabel}>Readers who tried</span>
+          <span className={styles.metricValue}>{stats.readers}</span>
+          <span className={styles.metricHint}>Distinct readers</span>
+        </div>
+        <div className={`${ui.card} ${styles.metric}`} style={{ ['--tone' as string]: '#2ECC71' }}>
+          <span className={base.kpiLabel}>Right first time</span>
+          <span className={styles.metricValue}>{pct(stats.accuracy)}</span>
+          <span className={styles.metricHint}>Across all questions</span>
+        </div>
+      </div>
+      <Card title="Hardest questions" sub="Lowest first-try accuracy, questions with 3+ answers" wide>
+        {stats.hardest.length === 0 ? (
+          <Empty text="Not enough answers yet (3 per question needed)." />
+        ) : (
+          <div className={styles.heatWrap}>
+            <table className={styles.plain}>
+              <thead><tr><th>Question</th><th>Point</th><th>Answers</th><th>Right first time</th></tr></thead>
+              <tbody>
+                {stats.hardest.map(q => (
+                  <tr key={q.id}>
+                    <th scope="row" style={{ whiteSpace: 'normal', minWidth: 200 }}>{q.question}</th>
+                    <td style={{ whiteSpace: 'normal' }}><small>{q.point}</small></td>
+                    <td>{q.attempts}</td>
+                    <td>{pct(q.accuracy)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </>
+  );
+}
+
 export default function InsightsPanel({ refreshKey }: InsightsPanelProps) {
   const [data, setData] = useState<Insights | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [quiz, setQuiz] = useState<QuizStats | null>(null);
 
   const load = useCallback(async () => {
     setError('');
@@ -342,6 +399,9 @@ export default function InsightsPanel({ refreshKey }: InsightsPanelProps) {
       const res = await fetch(`/api/admin/insights?t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Could not load reader insights.');
       setData(await res.json());
+      // Quiz results are an extra: a failure here must not hide the rest of the insights
+      const q = await fetch(`/api/admin/quiz-stats?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+      setQuiz(q?.ok ? await q.json() : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load reader insights.');
     } finally {
@@ -389,6 +449,9 @@ export default function InsightsPanel({ refreshKey }: InsightsPanelProps) {
           <LanguageMix mix={data.languageMix} />
         </Card>
       </div>
+
+      <h2 className={styles.sectionTitle}><IconBook size={18} /> Quiz results</h2>
+      <QuizResults stats={quiz} />
 
       <h2 className={styles.sectionTitle}><IconChart size={18} /> Campaigns &amp; QR sources</h2>
       <div className={base.grid}>

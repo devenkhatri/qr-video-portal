@@ -3,13 +3,14 @@ import { extractYouTubeId } from './youtube';
 import { LANGUAGES, Lang } from './languages';
 import { normalizeImageUrl } from './imageUrl';
 import fallbackGuide from '@/data/guide.json';
-import type { Chapter, Point, PointRef, RawChapter, RawPoint } from '@/types/guide';
+import type { Chapter, OptionKey, Point, PointRef, Question, RawChapter, RawPoint, RawQuestion } from '@/types/guide';
 
 type SheetRow = Record<string, string>;
 
 interface GuideData {
   chapters: RawChapter[];
   points: RawPoint[];
+  questions: RawQuestion[];
 }
 
 // 60s in-memory cache to stay under Google Sheets API rate limits
@@ -99,13 +100,44 @@ function buildPoints(rows: SheetRow[]): RawPoint[] {
     .sort((a, b) => a.order - b.order);
 }
 
+const OPTION_KEYS: OptionKey[] = ['a', 'b', 'c', 'd'];
+
+/** Rows with a missing question, fewer than two options, or an invalid answer key are skipped. */
+function buildQuestions(rows: SheetRow[]): RawQuestion[] {
+  const out: RawQuestion[] = [];
+  rows.forEach((r, i) => {
+    if (!r.question_id || !r.point_id || !r.question || !isActive(r.active)) return;
+    const lang = LANGUAGES.find(l => l.code === r.lang)?.code;
+    if (!lang) return;
+    const options = OPTION_KEYS.map(key => ({ key, text: r[`opt_${key}`] || '' })).filter(o => o.text);
+    const correct = (r.correct || '').toLowerCase() as OptionKey;
+    if (options.length < 2 || !options.some(o => o.key === correct)) return;
+    out.push({
+      id: r.question_id,
+      pointId: r.point_id,
+      order: toOrder(r.order, i + 1),
+      lang,
+      question: r.question,
+      options,
+      correct,
+      explanation: r.explanation || '',
+    });
+  });
+  return out.sort((a, b) => a.order - b.order);
+}
+
 function loadFallback(): GuideData {
-  const f = fallbackGuide as { chapters: Record<string, string | number>[]; points: Record<string, string | number>[] };
+  const f = fallbackGuide as {
+    chapters: Record<string, string | number>[];
+    points: Record<string, string | number>[];
+    questions?: Record<string, string | number>[];
+  };
   const asRows = (list: Record<string, string | number>[]): SheetRow[] =>
     list.map(item => Object.fromEntries(Object.entries(item).map(([k, v]) => [k, String(v)])));
   return {
     chapters: buildChapters(asRows(f.chapters)),
     points: buildPoints(asRows(f.points)),
+    questions: buildQuestions(asRows(f.questions ?? [])),
   };
 }
 
@@ -120,14 +152,17 @@ async function getGuideData(): Promise<GuideData> {
 
   try {
     const sheets = getSheetsClient();
-    const [chaptersRes, pointsRes] = await Promise.all([
+    const [chaptersRes, pointsRes, quizRes] = await Promise.all([
       sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: RANGES.chapters }),
       sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: RANGES.points }),
+      // The quiz tab is optional: a missing tab must never take the guide down
+      sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: RANGES.quiz }).catch(() => null),
     ]);
 
     const data: GuideData = {
       chapters: buildChapters(rowsToObjects(chaptersRes.data.values as string[][])),
       points: buildPoints(rowsToObjects(pointsRes.data.values as string[][])),
+      questions: buildQuestions(rowsToObjects((quizRes?.data.values as string[][]) ?? null)),
     };
 
     if (data.chapters.length === 0) {
@@ -171,7 +206,17 @@ function toChapter(c: RawChapter, points: RawPoint[], lang: Lang): Chapter {
   };
 }
 
-function toPoint(p: RawPoint, lang: Lang): Point {
+/** Questions for one point in the reader's language, else in the first language that has any. */
+function questionsFor(pointId: string, all: RawQuestion[], lang: Lang): Question[] {
+  const mine = all.filter(q => q.pointId === pointId);
+  const chosen =
+    mine.some(q => q.lang === lang) ? lang : LANGUAGES.map(l => l.code).find(c => mine.some(q => q.lang === c));
+  return mine
+    .filter(q => q.lang === chosen)
+    .map(q => ({ id: q.id, order: q.order, question: q.question, options: q.options, correct: q.correct, explanation: q.explanation }));
+}
+
+function toPoint(p: RawPoint, lang: Lang, questions: RawQuestion[]): Point {
   return {
     id: p.id,
     order: p.order,
@@ -180,6 +225,7 @@ function toPoint(p: RawPoint, lang: Lang): Point {
     images: p.images,
     // Videos are intentionally not cross-language: no video beats the wrong-language video
     youtubeId: p.videos[lang],
+    questions: questionsFor(p.id, questions, lang),
   };
 }
 
@@ -192,7 +238,7 @@ export async function getChapterWithPoints(
   chapterId: string,
   lang: Lang
 ): Promise<{ chapter: Chapter; points: Point[]; next: Chapter | null } | null> {
-  const { chapters, points } = await getGuideData();
+  const { chapters, points, questions } = await getGuideData();
   const index = chapters.findIndex(c => c.id === chapterId);
   if (index === -1) return null;
 
@@ -200,7 +246,7 @@ export async function getChapterWithPoints(
   const nextRaw = chapters[index + 1];
   return {
     chapter: toChapter(chapters[index], points, lang),
-    points: points.filter(p => p.chapterId === chapterId).map(p => toPoint(p, lang)),
+    points: points.filter(p => p.chapterId === chapterId).map(p => toPoint(p, lang, questions)),
     next: nextRaw ? toChapter(nextRaw, points, lang) : null,
   };
 }
@@ -235,6 +281,12 @@ export async function getPointPage(
     next: ref(data.points[index + 1]),
     nextChapter: data.next,
   };
+}
+
+/** Question id -> correct option, so attempts can be scored on the server rather than trusted from the browser. */
+export async function getAnswerKey(): Promise<Record<string, { correct: OptionKey; pointId: string; question: string }>> {
+  const { questions } = await getGuideData();
+  return Object.fromEntries(questions.map(q => [q.id, { correct: q.correct, pointId: q.pointId, question: q.question }]));
 }
 
 /** Maps every point id to its chapter id (used to roll point views up to chapters in admin stats). */

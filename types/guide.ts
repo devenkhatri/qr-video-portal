@@ -22,6 +22,24 @@ export interface RawPoint {
   videos: Partial<Record<Lang, string>>; // YouTube IDs per language
 }
 
+export type OptionKey = 'a' | 'b' | 'c' | 'd';
+
+/** Raw multiple-choice question: one entry per language, linked by `id`. */
+export interface RawQuestion {
+  id: string;
+  pointId: string;
+  order: number;
+  lang: Lang;
+  question: string;
+  /** Options that have text, in a-d order. */
+  options: { key: OptionKey; text: string }[];
+  correct: OptionKey;
+  explanation: string;
+}
+
+/** Multiple-choice question resolved for a single language. */
+export type Question = Omit<RawQuestion, 'pointId' | 'lang'>;
+
 /** Chapter resolved for a single language. */
 export interface Chapter {
   id: string;
@@ -42,6 +60,7 @@ export interface Point {
   text: string;
   images: string[];
   youtubeId?: string;
+  questions: Question[];
 }
 
 /** Lightweight point reference used for previous/next navigation. */
