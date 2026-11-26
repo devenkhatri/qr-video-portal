@@ -7,6 +7,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import QrModal, { type QrTarget } from '@/components/QrModal';
 import ImageLightbox from '@/components/ImageLightbox';
+import QuizCard from '@/components/QuizCard';
 import { IconCheck, IconChevron, IconQr } from '@/components/admin/icons';
 import { useRegistrationGate, trackView } from '@/lib/useRegistrationGate';
 import { markPointRead, setLastVisited } from '@/lib/progress';
@@ -176,6 +177,10 @@ export default function PointClient({
                 allowFullScreen
               />
             </div>
+          )}
+
+          {point.questions.length > 0 && (
+            <QuizCard key={`${point.id}-${lang}`} pointId={point.id} questions={point.questions} lang={lang} userId={userId} />
           )}
 
           {/* End of chapter: acknowledge it */}

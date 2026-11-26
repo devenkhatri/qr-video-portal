@@ -47,6 +47,8 @@ export interface PointInput {
 export interface AdminContent {
   chapters: AdminChapter[];
   points: AdminPoint[];
+  /** point id -> number of quiz questions */
+  quizCounts?: Record<string, number>;
   /** True when Google Sheets isn't configured (read-only sample content). */
   isDemoData?: boolean;
 }

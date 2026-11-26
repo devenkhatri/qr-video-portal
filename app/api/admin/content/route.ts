@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { sessionOptions, SessionData } from '@/lib/session';
+import { getQuizCounts } from '@/lib/quizAdmin';
 import {
   ContentError,
   cleanChapterInput,
@@ -50,7 +51,7 @@ export async function GET() {
   if (denied) return denied;
   try {
     return NextResponse.json(
-      { ...(await getAdminContent()), isDemoData: isDemoMode() },
+      { ...(await getAdminContent()), quizCounts: await getQuizCounts(), isDemoData: isDemoMode() },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error) {

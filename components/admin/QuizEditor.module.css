@@ -1,0 +1,7 @@
+.card { display: grid; gap: var(--space-3); border: 1px solid var(--color-border, #2a3140); border-radius: 12px; padding: var(--space-4); margin: 0; min-width: 0; }
+.legend { font-weight: 700; padding: 0 var(--space-2); }
+.short { min-height: 72px !important; }
+.optionRow { display: grid; grid-template-columns: auto auto 1fr; gap: var(--space-2); align-items: center; }
+.optionRow input[type='radio'] { width: 20px; height: 20px; }
+.optKey { font-weight: 700; width: 20px; text-align: center; }
+.cardActions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }

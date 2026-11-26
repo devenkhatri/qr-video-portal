@@ -44,6 +44,14 @@ interface UiStrings {
   skipToContent: string;
   switchLanguage: string;
   allRead: string;
+  testYourself: string;
+  testHint: string;
+  correctAnswer: string;
+  wrongAnswer: string;
+  tryAgain: string;
+  yourScore: string;
+  quizDone: string;
+  quizScore: string;
 }
 
 export const STRINGS: Record<Lang, UiStrings> = {
@@ -90,6 +98,14 @@ export const STRINGS: Record<Lang, UiStrings> = {
     skipToContent: 'મુખ્ય સામગ્રી પર જાઓ',
     switchLanguage: 'ભાષા બદલો',
     allRead: 'બધા મુદ્દા વાંચ્યા',
+    testYourself: 'જાતે ચકાસો',
+    testHint: 'તમે શું શીખ્યા તે ચકાસો. સાચો જવાબ પસંદ કરો.',
+    correctAnswer: 'સાચો જવાબ!',
+    wrongAnswer: 'ફરી પ્રયત્ન કરો',
+    tryAgain: 'ફરીથી કરો',
+    yourScore: 'તમારો સ્કોર',
+    quizDone: 'પૂર્ણ',
+    quizScore: 'ક્વિઝ સ્કોર',
   },
   hi: {
     guidebook: 'मार्गदर्शिका',
@@ -134,6 +150,14 @@ export const STRINGS: Record<Lang, UiStrings> = {
     skipToContent: 'मुख्य सामग्री पर जाएँ',
     switchLanguage: 'भाषा बदलें',
     allRead: 'सभी बिंदु पढ़ लिए',
+    testYourself: 'खुद जाँचें',
+    testHint: 'देखें कि आपने क्या सीखा। सही उत्तर चुनें।',
+    correctAnswer: 'सही उत्तर!',
+    wrongAnswer: 'फिर से कोशिश करें',
+    tryAgain: 'दोबारा करें',
+    yourScore: 'आपका स्कोर',
+    quizDone: 'पूर्ण',
+    quizScore: 'क्विज़ स्कोर',
   },
   en: {
     guidebook: 'Guidebook',
@@ -178,5 +202,13 @@ export const STRINGS: Record<Lang, UiStrings> = {
     skipToContent: 'Skip to content',
     switchLanguage: 'Change language',
     allRead: 'You have read every point',
+    testYourself: 'Test yourself',
+    testHint: 'Check what you learned. Choose the right answer.',
+    correctAnswer: 'Correct!',
+    wrongAnswer: 'Not quite, try again',
+    tryAgain: 'Try again',
+    yourScore: 'Your score',
+    quizDone: 'Done',
+    quizScore: 'Quiz score',
   },
 };

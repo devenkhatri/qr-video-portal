@@ -23,7 +23,7 @@ interface ChapterClientProps {
 
 export default function ChapterClient({ chapter, points, next, lang, isAdmin }: ChapterClientProps) {
   const { state, userId, onRegistered } = useRegistrationGate();
-  const { read } = useProgress();
+  const { read, quiz } = useProgress();
   const t = STRINGS[lang];
 
   // One chapter view per visit, once the content is actually shown
@@ -119,9 +119,14 @@ export default function ChapterClient({ chapter, points, next, lang, isAdmin }: 
                         <span className={styles.pointBody}>
                           <span className={styles.pointHeading}>{p.heading}</span>
                           {p.text && <span className={styles.pointSnippet}>{p.text}</span>}
-                          {(p.images.length > 0 || p.youtubeId) && (
+                          {(p.images.length > 0 || p.youtubeId || p.questions.length > 0) && (
                             <span className={styles.chips}>
                               {p.youtubeId && <span className={styles.chip}><IconPlay size={13} /> {t.hasVideo}</span>}
+                              {p.questions.length > 0 && (
+                                <span className={styles.chip}>
+                                  {quiz[p.id] ? `${t.quizScore} ${quiz[p.id].correct}/${quiz[p.id].total}` : t.testYourself}
+                                </span>
+                              )}
                               {p.images.length > 0 && <span className={styles.chip}><IconImage size={13} /> {t.hasImages} · {p.images.length}</span>}
                             </span>
                           )}

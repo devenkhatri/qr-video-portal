@@ -22,4 +22,6 @@ export const RANGES = {
   analytics: 'analytics!A:E',
   chapters: 'chapters!A:J',
   points: 'points!A:N',
+  quiz: 'quiz!A:M',
+  quizAttempts: 'quiz_attempts!A:K',
 } as const;
