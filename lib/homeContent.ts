@@ -4,8 +4,8 @@
  */
 export const HOME = {
   eyebrow: 'Community Oncology',
-  title: 'Education & Support for Everyone, Anywhere',
-  tagline: 'Capacity Building Program to Bridge Gaps in Cancer Care',
+  title: 'Capacity Building Program to Bridge Gaps in Cancer Care',
+  tagline: 'Education & Support for Everyone - Anywhere!',
   helpline: { label: 'Cancer Helpline', number: '+91 9099902211', tel: '+919099902211' },
 
   stats: [

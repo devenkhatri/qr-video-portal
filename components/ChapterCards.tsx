@@ -124,7 +124,7 @@ export default function ChapterCards({ chapters, lang }: ChapterCardsProps) {
         })}
       </ol>
 
-      {qrTarget && <QrModal target={qrTarget} onClose={() => setQrTarget(null)} />}
+      {qrTarget && <QrModal target={qrTarget} onClose={() => setQrTarget(null)} shareLang={lang} />}
     </>
   );
 }

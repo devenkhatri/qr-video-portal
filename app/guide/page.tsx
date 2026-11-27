@@ -32,7 +32,7 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
 
   return (
     <>
-      <SiteHeader lang={lang} isAdmin={Boolean(session.isAdmin)} back={{ href: '/', label: t.language }} />
+      <SiteHeader lang={lang} isAdmin={Boolean(session.isAdmin)} back={{ href: '/start', label: t.language }} />
 
       <main id="main" className={styles.main}>
         <div className={styles.wrap} lang={lang}>

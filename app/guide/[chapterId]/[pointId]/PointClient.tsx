@@ -218,7 +218,7 @@ export default function PointClient({
           </nav>
         </article>
 
-        {qrTarget && <QrModal target={qrTarget} onClose={() => setQrTarget(null)} />}
+        {qrTarget && <QrModal target={qrTarget} onClose={() => setQrTarget(null)} shareLang={lang} />}
         {zoom && <ImageLightbox src={zoom} alt={point.heading} closeLabel={t.close} onClose={() => setZoom(null)} />}
       </main>
 
