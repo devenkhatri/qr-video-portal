@@ -12,7 +12,7 @@
 
 /* ---- Hero ---- */
 .hero { text-align: center; padding: var(--space-10) 0 0; }
-.hero .container { max-width: 780px; }
+.hero .container { max-width: 1080px; }
 
 .eyebrow {
   display: inline-block;
@@ -25,12 +25,12 @@
 }
 .title {
   margin-top: var(--space-5);
-  font-size: clamp(2rem, 7.5vw, 3.4rem);
+  font-size: clamp(1.6rem, 6vw, 2.5rem);
   font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; text-wrap: balance;
 }
 .tagline {
-  margin: var(--space-4) auto 0; max-width: 34ch;
-  color: #D1D5DB; font-size: clamp(1.05rem, 3.6vw, 1.3rem); line-height: 1.6; text-wrap: balance;
+  margin: var(--space-3) auto 0;
+  color: #D1D5DB; font-size: clamp(1rem, 3.4vw, 1.25rem); font-weight: 400; line-height: 1.6; text-wrap: balance;
 }
 .heroActions { margin-top: var(--space-8); display: flex; flex-direction: column; gap: var(--space-3); align-items: stretch; }
 

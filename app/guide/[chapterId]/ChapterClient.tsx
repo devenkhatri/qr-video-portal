@@ -95,7 +95,11 @@ export default function ChapterClient({ chapter, points, next, lang, isAdmin }: 
 
             {resumeAt && (
               <Link href={pointHref(resumeAt.id)} className={styles.cta}>
-                {done > 0 && !complete ? t.resume : t.startReading} <span aria-hidden="true">→</span>
+                <span className={styles.ctaText}>
+                  <span>{done > 0 ? t.continueReading : t.startReading}</span>
+                  <span className={styles.ctaSub}>{resumeAt.heading}</span>
+                </span>
+                <span aria-hidden="true">→</span>
               </Link>
             )}
             {complete && <p className={styles.allRead}><IconCheck size={16} /> {t.allRead}</p>}

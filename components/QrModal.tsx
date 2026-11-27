@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import QRCode from 'qrcode';
+import type { Lang } from '@/lib/languages';
+import { SHARE } from '@/lib/shareStrings';
 import { IconCheck, IconClose, IconCopy } from './admin/icons';
 import styles from './QrModal.module.css';
 
@@ -19,6 +21,8 @@ interface QrModalProps {
   onClose: () => void;
   /** Admin only: lets the admin tag the QR with a campaign (?src=...) to attribute registrations. */
   allowSource?: boolean;
+  /** Reader pages pass their language to enable sharing (message follows it). Admin omits it: no share. */
+  shareLang?: Lang;
 }
 
 /** Keeps campaign tags URL- and spreadsheet-safe: lowercase letters, digits, dashes. */
@@ -133,7 +137,7 @@ async function generateCompositeQr(url: string, title: string, subtext: string):
   return canvas.toDataURL('image/png');
 }
 
-export default function QrModal({ target: baseTarget, onClose, allowSource }: QrModalProps) {
+export default function QrModal({ target: baseTarget, onClose, allowSource, shareLang }: QrModalProps) {
   const [source, setSource] = useState('');
   const cleaned = allowSource ? cleanSource(source) : '';
   const target = useMemo(
@@ -142,6 +146,11 @@ export default function QrModal({ target: baseTarget, onClose, allowSource }: Qr
   );
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [qrFile, setQrFile] = useState<File | null>(null);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+  const [shareNote, setShareNote] = useState('');
+  const sh = shareLang ? SHARE[shareLang] : null;
+  const shareText = sh ? sh.message(baseTarget.title) : '';
 
   // Generate the print-ready card whenever the target changes
   useEffect(() => {
@@ -160,6 +169,23 @@ export default function QrModal({ target: baseTarget, onClose, allowSource }: Qr
     };
   }, [target]);
 
+  // Prepare the QR card as a File once, so the native share can happen inside the tap
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+    if (!qrDataUrl) {
+      setQrFile(null);
+      return;
+    }
+    let isCurrent = true;
+    fetch(qrDataUrl)
+      .then(r => r.blob())
+      .then(b => isCurrent && setQrFile(new File([b], `qr-${target.key}.png`, { type: 'image/png' })))
+      .catch(() => isCurrent && setQrFile(null));
+    return () => {
+      isCurrent = false;
+    };
+  }, [qrDataUrl, target.key]);
+
   // Close on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -175,6 +201,49 @@ export default function QrModal({ target: baseTarget, onClose, allowSource }: Qr
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const note = (msg: string) => {
+    setShareNote(msg);
+    setTimeout(() => setShareNote(''), 3000);
+  };
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+  };
+
+  /** Native share sheet: link + message + QR image where the platform allows files. */
+  const nativeShare = async () => {
+    if (!sh) return;
+    // The link is part of the text: some apps (WhatsApp, iOS) drop `url` when a file is attached.
+    const text = `${shareText}\n${target.url}`;
+    try {
+      if (qrFile && navigator.canShare?.({ files: [qrFile] })) {
+        await navigator.share({ files: [qrFile], title: baseTarget.title, text });
+      } else {
+        await navigator.share({ title: baseTarget.title, text: shareText, url: target.url });
+      }
+    } catch (e) {
+      if ((e as DOMException)?.name !== 'AbortError') note(sh.failed);
+    }
+  };
+
+  const open = (href: string) => window.open(href, '_blank', 'noopener,noreferrer');
+
+  const instagram = async () => {
+    if (!sh) return;
+    await copyText(`${shareText}\n${target.url}`);
+    note(sh.instagramCopied);
+    open('https://www.instagram.com/');
   };
 
   const copyUrl = async () => {
@@ -248,6 +317,41 @@ export default function QrModal({ target: baseTarget, onClose, allowSource }: Qr
             {copied ? 'Copied' : 'Copy link'}
           </button>
         </div>
+
+        {sh && (
+          <div className={styles.shareBox} lang={shareLang}>
+            {canNativeShare ? (
+              <button type="button" id="qr-share-btn" className={styles.btnShare} onClick={nativeShare}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4" />
+                </svg>
+                {sh.share}
+              </button>
+            ) : (
+              <>
+                <p className={styles.shareLabel}>{sh.shareVia}</p>
+                <ul className={styles.shareList}>
+                  {[
+                    { id: 'whatsapp', label: 'WhatsApp', href: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${target.url}`)}` },
+                    { id: 'telegram', label: 'Telegram', href: `https://t.me/share/url?url=${encodeURIComponent(target.url)}&text=${encodeURIComponent(shareText)}` },
+                    { id: 'facebook', label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(target.url)}` },
+                  ].map(p => (
+                    <li key={p.id}><button type="button" className={styles.shareChip} onClick={() => open(p.href)}>{p.label}</button></li>
+                  ))}
+                  <li><button type="button" className={styles.shareChip} onClick={instagram}>Instagram</button></li>
+                  <li>
+                    <a className={styles.shareChip} href={`mailto:?subject=${encodeURIComponent(sh.emailSubject)}&body=${encodeURIComponent(`${shareText}\n${target.url}`)}`}>Email</a>
+                  </li>
+                  <li>
+                    <a className={styles.shareChip} href={`sms:?&body=${encodeURIComponent(`${shareText} ${target.url}`)}`}>SMS</a>
+                  </li>
+                </ul>
+              </>
+            )}
+            <p className={styles.shareNote} role="status" aria-live="polite">{shareNote}</p>
+          </div>
+        )}
       </div>
     </div>
   );
